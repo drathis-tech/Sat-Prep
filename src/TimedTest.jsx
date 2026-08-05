@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getSubjectPool, isAnswerCorrect, shuffle } from "./quizUtils";
 import { formatMath } from "./formatMath";
+import Calculator from "./Calculator";
 
 const MODULES = [
   { id: "rw1", subject: "reading_writing", label: "Reading & Writing — Module 1", minutes: 32, count: 27 },
@@ -159,8 +160,13 @@ function TimedTest() {
     goToNextStage();
   }
 
+  const showCalculator =
+    phase === "running" && !stage.isBreak && !isPaused && stage.subject === "math";
+
+  let body;
+
   if (phase === "intro") {
-    return (
+    body = (
       <>
         <header className="content-header">
           <div>
@@ -192,9 +198,7 @@ function TimedTest() {
         </div>
       </>
     );
-  }
-
-  if (phase === "results") {
+  } else if (phase === "results") {
     const moduleResults = QUESTION_MODULES.map((m) => {
       const answers = moduleAnswers[m.id] || [];
       const correct = answers.filter((a) => a && a.correct).length;
@@ -207,7 +211,7 @@ function TimedTest() {
       0
     );
 
-    return (
+    body = (
       <>
         <header className="content-header">
           <div>
@@ -246,11 +250,9 @@ function TimedTest() {
         </div>
       </>
     );
-  }
-
-  // phase === "running"
-  if (stage.isBreak) {
-    return (
+  } else if (stage.isBreak) {
+    // phase === "running"
+    body = (
       <>
         <header className="content-header">
           <div>
@@ -269,10 +271,8 @@ function TimedTest() {
         </div>
       </>
     );
-  }
-
-  if (isPaused) {
-    return (
+  } else if (isPaused) {
+    body = (
       <>
         <header className="content-header">
           <div>
@@ -290,79 +290,86 @@ function TimedTest() {
         </div>
       </>
     );
-  }
+  } else {
+    const currentQuestion = moduleData[stage.id][questionIndex];
+    const lowTime = secondsRemaining <= 300;
 
-  const currentQuestion = moduleData[stage.id][questionIndex];
-  const lowTime = secondsRemaining <= 300;
+    body = (
+      <>
+        <header className="content-header">
+          <div>
+            <h1 className="content-title">{stage.label}</h1>
+            <p className="content-subtitle">No going back once you hit Next</p>
+          </div>
+        </header>
+
+        <main className="question-card">
+          <div className="timed-header">
+            <span className="timed-progress">
+              Question {questionIndex + 1} of {stage.count}
+            </span>
+            <div className="timer-controls">
+              <span className={`timer-badge${lowTime ? " low-time" : ""}`}>
+                {formatClock(secondsRemaining)}
+              </span>
+              <button type="button" className="pause-btn" onClick={togglePause}>
+                Pause
+              </button>
+            </div>
+          </div>
+
+          <p className="question-text">{formatMath(currentQuestion.text)}</p>
+
+          {currentQuestion.image && (
+            <img
+              className="question-image"
+              src={`/question-images/${currentQuestion.image}`}
+              alt="Diagram for this question"
+            />
+          )}
+
+          {currentQuestion.type === "multiple_choice" ? (
+            <div className="choices">
+              {currentQuestion.choices.map((choice) => {
+                const letter = choice.trim().charAt(0);
+                const isSelected = selected === letter;
+                return (
+                  <button
+                    key={letter}
+                    type="button"
+                    className={`choice-btn${isSelected ? " selected" : ""}`}
+                    onClick={() => handleSelectChoice(letter)}
+                  >
+                    {formatMath(choice)}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="free-response">
+              <input
+                type="text"
+                className="free-response-input"
+                placeholder="Type your answer"
+                value={freeResponse}
+                onChange={(e) => setFreeResponse(e.target.value)}
+                onKeyDown={handleFreeResponseKeyDown}
+              />
+            </div>
+          )}
+
+          <button type="button" className="primary-btn" onClick={handleNext}>
+            Next
+          </button>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
-      <header className="content-header">
-        <div>
-          <h1 className="content-title">{stage.label}</h1>
-          <p className="content-subtitle">No going back once you hit Next</p>
-        </div>
-      </header>
-
-      <main className="question-card">
-        <div className="timed-header">
-          <span className="timed-progress">
-            Question {questionIndex + 1} of {stage.count}
-          </span>
-          <div className="timer-controls">
-            <span className={`timer-badge${lowTime ? " low-time" : ""}`}>
-              {formatClock(secondsRemaining)}
-            </span>
-            <button type="button" className="pause-btn" onClick={togglePause}>
-              Pause
-            </button>
-          </div>
-        </div>
-
-        <p className="question-text">{formatMath(currentQuestion.text)}</p>
-
-        {currentQuestion.image && (
-          <img
-            className="question-image"
-            src={`/question-images/${currentQuestion.image}`}
-            alt="Diagram for this question"
-          />
-        )}
-
-        {currentQuestion.type === "multiple_choice" ? (
-          <div className="choices">
-            {currentQuestion.choices.map((choice) => {
-              const letter = choice.trim().charAt(0);
-              const isSelected = selected === letter;
-              return (
-                <button
-                  key={letter}
-                  type="button"
-                  className={`choice-btn${isSelected ? " selected" : ""}`}
-                  onClick={() => handleSelectChoice(letter)}
-                >
-                  {formatMath(choice)}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="free-response">
-            <input
-              type="text"
-              className="free-response-input"
-              placeholder="Type your answer"
-              value={freeResponse}
-              onChange={(e) => setFreeResponse(e.target.value)}
-              onKeyDown={handleFreeResponseKeyDown}
-            />
-          </div>
-        )}
-
-        <button type="button" className="primary-btn" onClick={handleNext}>
-          Next
-        </button>
-      </main>
+      <Calculator show={showCalculator} />
+      {body}
     </>
   );
 }

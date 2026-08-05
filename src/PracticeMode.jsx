@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { isAnswerCorrect, shuffle } from "./quizUtils";
 import { formatMath } from "./formatMath";
+import Calculator from "./Calculator";
 
 function PracticeMode({ questionPool, title, subtitle }) {
   const [order, setOrder] = useState(() => shuffle(questionPool));
@@ -65,6 +66,8 @@ function PracticeMode({ questionPool, title, subtitle }) {
 
   return (
     <>
+      <Calculator show={Boolean(current) && current.subject === "math"} />
+
       <header className="content-header">
         <div>
           <h1 className="content-title">{title}</h1>
