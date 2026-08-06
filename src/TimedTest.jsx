@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSubjectPool, isAnswerCorrect, shuffle } from "./quizUtils";
-import { formatMath } from "./formatMath";
+import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 
 const MODULES = [
@@ -296,12 +296,9 @@ function TimedTest() {
 
     body = (
       <>
-        <header className="content-header">
-          <div>
-            <h1 className="content-title">{stage.label}</h1>
-            <p className="content-subtitle">No going back once you hit Next</p>
-          </div>
-        </header>
+        <div className="page-topbar">
+          <span className="page-topbar-label">{stage.label} · No going back once you hit Next</span>
+        </div>
 
         <main className="question-card">
           <div className="timed-header">
@@ -318,14 +315,16 @@ function TimedTest() {
             </div>
           </div>
 
-          <p className="question-text">{formatMath(currentQuestion.text)}</p>
+          <p className="question-text">{renderMath(currentQuestion.text)}</p>
 
           {currentQuestion.image && (
-            <img
-              className="question-image"
-              src={`/question-images/${currentQuestion.image}`}
-              alt="Diagram for this question"
-            />
+            <div className="question-image-frame">
+              <img
+                className="question-image"
+                src={`/question-images/${currentQuestion.image}`}
+                alt="Diagram for this question"
+              />
+            </div>
           )}
 
           {currentQuestion.type === "multiple_choice" ? (
@@ -340,7 +339,7 @@ function TimedTest() {
                     className={`choice-btn${isSelected ? " selected" : ""}`}
                     onClick={() => handleSelectChoice(letter)}
                   >
-                    {formatMath(choice)}
+                    {renderMath(choice)}
                   </button>
                 );
               })}

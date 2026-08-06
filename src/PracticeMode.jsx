@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { isAnswerCorrect, shuffle } from "./quizUtils";
-import { formatMath } from "./formatMath";
+import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 
 function PracticeMode({ questionPool, title, subtitle }) {
@@ -68,18 +68,15 @@ function PracticeMode({ questionPool, title, subtitle }) {
     <>
       <Calculator show={Boolean(current) && current.subject === "math"} />
 
-      <header className="content-header">
-        <div>
-          <h1 className="content-title">{title}</h1>
-          <p className="content-subtitle">{subtitle}</p>
-        </div>
-        <div className="score-tracker">
-          <span className="score-label">Score</span>
-          <span className="score-value">
-            {correctCount}/{attemptedCount}
-          </span>
-        </div>
-      </header>
+      <div className="page-topbar">
+        <span className="page-topbar-label">
+          {title}
+          {subtitle ? ` · ${subtitle}` : ""}
+        </span>
+        <span className="page-topbar-score">
+          Score {correctCount}/{attemptedCount}
+        </span>
+      </div>
 
       {!current ? (
         <div className="question-card">
@@ -96,14 +93,16 @@ function PracticeMode({ questionPool, title, subtitle }) {
             </button>
           </div>
 
-          <p className="question-text">{formatMath(current.text)}</p>
+          <p className="question-text">{renderMath(current.text)}</p>
 
           {current.image && (
-            <img
-              className="question-image"
-              src={`/question-images/${current.image}`}
-              alt="Diagram for this question"
-            />
+            <div className="question-image-frame">
+              <img
+                className="question-image"
+                src={`/question-images/${current.image}`}
+                alt="Diagram for this question"
+              />
+            </div>
           )}
 
           {current.type === "multiple_choice" ? (
@@ -129,7 +128,7 @@ function PracticeMode({ questionPool, title, subtitle }) {
                     onClick={() => handleSelectChoice(letter)}
                     disabled={answered}
                   >
-                    {formatMath(choice)}
+                    {renderMath(choice)}
                   </button>
                 );
               })}
@@ -167,7 +166,7 @@ function PracticeMode({ questionPool, title, subtitle }) {
                 {isCorrect ? "Correct!" : `Incorrect. Correct answer: ${current.correctAnswer}`}
               </div>
               <div className="explanation">
-                <strong>Explanation:</strong> {formatMath(current.explanation)}
+                <strong>Explanation:</strong> {renderMath(current.explanation)}
               </div>
               <button type="button" className="primary-btn" onClick={handleNextQuestion}>
                 Next Question

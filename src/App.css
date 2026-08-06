@@ -1,9 +1,6 @@
+/* Sidebar/nav chrome is intentionally always-dark in both themes (it's the
+   fixed "chrome" rail, not reading content) — these tokens never switch. */
 :root {
-  --accent-red: #e2001a;
-  --accent-red-hover: #b80016;
-  --accent-red-soft: #fdecee;
-  --accent-red-text: #9a0012;
-
   --sidebar-bg: #0d0d11;
   --sidebar-bg-hover: #1b1b21;
   --sidebar-border: #232329;
@@ -11,15 +8,70 @@
   --sidebar-text-dim: #6f6f79;
   --sidebar-text-bright: #ffffff;
 
+  /* Diagram frame behind question images is deliberately theme-independent:
+     the PNGs themselves have baked-in white backgrounds and black line art,
+     so the frame always stays light regardless of theme (see .question-image-frame). */
+  --diagram-bg: #ffffff;
+  --diagram-border: #e2e2e6;
+}
+
+/* ---------- Theme tokens ---------- */
+/* Default (and explicit dark) theme. */
+:root,
+:root[data-theme="dark"] {
+  --accent-red: #ff4348;
+  --accent-red-hover: #ff5f63;
+  --accent-red-soft: rgba(255, 67, 72, 0.14);
+  --accent-red-text: #ff9598;
+
+  --ink: #e8e8ea;
+  --ink-soft: #a4a4ae;
+  --ink-dim: #808089;
+  --surface: #0d0d11;
+  --surface-alt: #1a1a20;
+  --surface-card: #17171c;
+  --border: #29292f;
+
+  --green: #34c759;
+  --green-soft: rgba(52, 199, 89, 0.14);
+  --green-text: #7fe39a;
+
+  --shadow-sm: rgba(0, 0, 0, 0.45);
+  --shadow-md: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --accent-red: #e2001a;
+  --accent-red-hover: #b80016;
+  --accent-red-soft: #fdecee;
+  --accent-red-text: #9a0012;
+
   --ink: #101014;
   --ink-soft: #5c5c66;
+  --ink-dim: #78787f;
   --surface: #ffffff;
   --surface-alt: #f6f6f8;
+  --surface-card: #ffffff;
   --border: #e6e6ea;
 
   --green: #1e8e3e;
   --green-soft: #e8f5ea;
   --green-text: #146228;
+
+  --shadow-sm: rgba(16, 16, 20, 0.14);
+  --shadow-md: rgba(16, 16, 20, 0.06);
+  --shadow-lg: rgba(16, 16, 20, 0.18);
+
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--surface);
+  transition: background-color 0.15s;
 }
 
 * {
@@ -35,32 +87,39 @@
   color: var(--ink);
 }
 
-/* ---------- Sidebar toggle ---------- */
+/* ---------- Sidebar toggle / theme toggle ---------- */
 
-.sidebar-toggle {
+.sidebar-toggle,
+.theme-toggle {
   position: fixed;
   top: 24px;
-  left: 24px;
+  right: 24px;
   z-index: 100;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
+  background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--ink);
-  box-shadow: 0 2px 10px rgba(16, 16, 20, 0.12);
+  box-shadow: 0 2px 10px var(--shadow-sm);
   cursor: pointer;
 }
 
-.sidebar-toggle:hover {
+.theme-toggle {
+  right: 72px;
+}
+
+.sidebar-toggle:hover,
+.theme-toggle:hover {
   border-color: var(--accent-red);
   color: var(--accent-red);
 }
 
-.sidebar-toggle svg {
+.sidebar-toggle svg,
+.theme-toggle svg {
   width: 18px;
   height: 18px;
 }
@@ -75,7 +134,7 @@
   top: 0;
   overflow-y: auto;
   background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
+  border-left: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   padding: 84px 20px 28px;
@@ -250,7 +309,7 @@
 .main-area {
   flex: 1;
   min-width: 0;
-  padding: 48px 56px;
+  padding: 32px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -259,74 +318,80 @@
 /* Extra top clearance so the fixed sidebar-toggle button (which floats over
    the main area once the sidebar is hidden) never overlaps page content. */
 .main-area.main-area-full {
-  padding-top: 84px;
+  padding-top: 76px;
 }
 
 .content-header {
   width: 100%;
-  max-width: 960px;
+  max-width: 860px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 36px;
+  margin-bottom: 18px;
 }
 
 .content-title {
-  font-size: clamp(1.75rem, 2.6vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin: 0 0 8px;
+  font-size: clamp(1.2rem, 1.6vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0 0 4px;
   color: var(--ink);
 }
 
 .content-subtitle {
   margin: 0;
   color: var(--ink-soft);
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
-.score-tracker {
+/* Compact top strip used above the active question card in place of the
+   larger content-header — folds the domain/skill context and score into a
+   single small muted line so the question itself gets the space. */
+.page-topbar {
+  width: 100%;
+  max-width: 860px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 0.78rem;
+  color: var(--ink-dim);
 }
 
-.score-label {
-  font-size: 0.7rem;
-  font-weight: 700;
+.page-topbar-label {
+  min-width: 0;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.score-value {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #fff;
-  background: var(--accent-red);
-  padding: 6px 20px;
-  border-radius: 999px;
+.page-topbar-score {
+  font-weight: 600;
+  color: var(--ink-soft);
+  flex-shrink: 0;
 }
 
 .question-card {
   width: 100%;
-  max-width: 960px;
-  background: var(--surface);
+  max-width: 860px;
+  background: var(--surface-card);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 44px 52px;
-  box-shadow: 0 2px 16px rgba(16, 16, 20, 0.05);
+  border-radius: 16px;
+  padding: 26px 30px;
+  box-shadow: 0 2px 16px var(--shadow-md);
 }
 
 .question-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .question-number {
@@ -359,53 +424,43 @@
   font-size: 1.3rem;
   font-weight: 600;
   line-height: 1.55;
-  margin: 0 0 28px;
+  margin: 0 0 16px;
   color: var(--ink);
 }
 
-.stacked-fraction {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  vertical-align: middle;
-  font-size: 0.75em;
-  line-height: 1.2;
-  margin: 0 0.08em;
-  text-align: center;
-}
-
-.stacked-fraction-num {
-  padding: 0 0.2em 0.05em;
-}
-
-.stacked-fraction-den {
-  align-self: stretch;
-  padding: 0.05em 0.2em 0;
-  border-top: 1px solid currentColor;
+/* Diagram PNGs have a baked-in white background and black line art, so they
+   always sit on a light frame (see --diagram-bg/--diagram-border above) —
+   in dark mode this reads as an intentional card instead of a glaring
+   white rectangle; in light mode it's barely visible against the page. */
+.question-image-frame {
+  display: block;
+  max-width: 100%;
+  margin: 0 0 18px;
+  padding: 16px;
+  background: var(--diagram-bg);
+  border: 1px solid var(--diagram-border);
+  border-radius: 12px;
 }
 
 .question-image {
   display: block;
   max-width: 100%;
   width: auto;
-  max-height: 360px;
-  margin: 0 0 28px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-alt);
+  max-height: 340px;
+  margin: 0 auto;
 }
 
 .choices {
   max-width: 700px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .choice-btn {
   text-align: left;
-  padding: 16px 20px;
+  padding: 14px 18px;
   font-size: 1rem;
   line-height: 1.5;
   border: 2px solid var(--border);
@@ -445,7 +500,7 @@
 
 .free-response {
   max-width: 420px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .free-response-input {
@@ -456,6 +511,12 @@
   border-radius: 12px;
   font-family: inherit;
   min-height: 48px;
+  background: var(--surface-alt);
+  color: var(--ink);
+}
+
+.free-response-input::placeholder {
+  color: var(--ink-dim);
 }
 
 .free-response-input:focus {
@@ -545,7 +606,7 @@
 .mode-card h2 {
   margin: 0;
   font-size: 1.4rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
@@ -570,7 +631,7 @@
 .panel-narrow h2 {
   margin: 0 0 14px;
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
@@ -720,14 +781,14 @@
   align-items: center;
   gap: 8px;
   padding: 10px 18px;
-  background: var(--surface);
+  background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--ink);
   font-size: 0.9rem;
   font-weight: 600;
   font-family: inherit;
-  box-shadow: 0 2px 10px rgba(16, 16, 20, 0.12);
+  box-shadow: 0 2px 10px var(--shadow-sm);
   cursor: pointer;
 }
 
@@ -755,10 +816,10 @@
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 32px);
   flex-direction: column;
-  background: var(--surface);
+  background: var(--surface-card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(16, 16, 20, 0.24);
+  box-shadow: 0 12px 32px var(--shadow-lg);
   overflow: hidden;
   resize: both;
 }
@@ -811,11 +872,11 @@
 
 @media (max-width: 960px) {
   .main-area {
-    padding: 36px 32px;
+    padding: 28px 24px;
   }
 
   .question-card {
-    padding: 32px;
+    padding: 22px;
   }
 }
 
@@ -824,16 +885,20 @@
     flex-direction: column;
   }
 
+  /* Sidebar is second in DOM order (it now renders to the right of the
+     main content on desktop) but should still appear as the top nav bar
+     on narrow/mobile layouts. */
   .sidebar {
+    order: -1;
     flex: 0 0 auto;
     width: 100%;
     height: auto;
     max-height: none;
     flex-direction: row;
     align-items: center;
-    padding: 16px 20px 16px 76px;
+    padding: 16px 124px 16px 20px;
     gap: 16px;
-    border-right: none;
+    border-left: none;
     border-bottom: 1px solid var(--sidebar-border);
   }
 
@@ -868,16 +933,17 @@
     gap: 14px;
   }
 
-  .score-tracker {
-    align-items: flex-start;
+  .page-topbar {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .page-topbar-label {
+    width: 100%;
   }
 
   .question-card {
-    padding: 22px;
-  }
-
-  .question-text {
-    font-size: 1.1rem;
+    padding: 18px;
   }
 
   .primary-btn {
