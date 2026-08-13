@@ -29,6 +29,7 @@ export function getSubjectPool(subject) {
 export function filterQuestions(filter) {
   return questions.filter((q) => {
     if (filter.skill) return q.domain === filter.domain && q.skill === filter.skill;
+    if (filter.domain) return q.domain === filter.domain;
     if (filter.subject && filter.subject !== "all") return q.subject === filter.subject;
     return true;
   });
@@ -36,6 +37,15 @@ export function filterQuestions(filter) {
 
 export function subjectLabel(subject) {
   return subject === "reading_writing" ? "Reading & Writing" : "Math";
+}
+
+// Plain substring match over question text — the question bank is small
+// enough (~270 items) that this runs comfortably on every keystroke with
+// no debouncing or indexing needed.
+export function searchQuestions(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return questions.filter((item) => item.text.toLowerCase().includes(q));
 }
 
 // Distinct domain/skill combinations grouped by domain, in first-seen order.

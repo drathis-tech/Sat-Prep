@@ -1,0 +1,40 @@
+.screen-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  background: var(--void);
+  opacity: 0;
+  /* A symmetric rise-and-fall needs one easing for the whole pulse, not a
+     one-directional ease-out (that stalls the fall — see the hyperspace
+     effect this replaced, which had exactly that bug). */
+  animation: screen-fade-pulse var(--duration) cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.screen-fade-full {
+  --duration: 320ms;
+  --fade-peak: 0.92;
+}
+
+.screen-fade-light {
+  --duration: 180ms;
+  --fade-peak: 0.7;
+}
+
+@keyframes screen-fade-pulse {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: var(--fade-peak);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-fade {
+    display: none;
+  }
+}

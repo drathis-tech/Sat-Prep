@@ -1,9 +1,44 @@
+/* Shared night-sky palette — the whole app is one permanent dark space
+   theme now (no light variant), so these are plain :root tokens rather
+   than a data-theme-gated set. */
+:root {
+  --void: #070b1c;
+  --void-deep: #0c1533;
+  --panel: #0e1738;
+  --panel-alt: #16224d;
+  --starlight: #eef1f8;
+  --starlight-dim: #a9b0c9;
+  --dim: #8a93b3;
+
+  --brass: #d1a24e;
+  --brass-bright: #e6b563;
+  --brass-dim: #7a6636;
+  --brass-glow: rgba(209, 162, 78, 0.35);
+  --brass-soft: rgba(209, 162, 78, 0.16);
+  --brass-text: #f0cf8a;
+
+  --green: #34c759;
+  --green-soft: rgba(52, 199, 89, 0.14);
+  --green-text: #7fe39a;
+
+  --danger: #ff4348;
+  --danger-soft: rgba(255, 67, 72, 0.14);
+  --danger-text: #ff9598;
+
+  --shadow-sm: rgba(0, 0, 0, 0.45);
+  --shadow-md: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background: var(--void);
 }
 
 #root {

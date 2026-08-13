@@ -2,8 +2,10 @@ import { useState } from "react";
 import { isAnswerCorrect, shuffle } from "./quizUtils";
 import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
+import { useScreenFade } from "./useScreenFade";
 
 function PracticeMode({ questionPool, title, subtitle }) {
+  const triggerFade = useScreenFade();
   const [order, setOrder] = useState(() => shuffle(questionPool));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -34,17 +36,19 @@ function PracticeMode({ questionPool, title, subtitle }) {
   }
 
   function handleNextQuestion() {
-    const nextIndex = index + 1;
-    if (nextIndex >= order.length) {
-      setOrder(shuffle(questionPool));
-      setIndex(0);
-    } else {
-      setIndex(nextIndex);
-    }
-    setSelected(null);
-    setFreeResponse("");
-    setAnswered(false);
-    setIsCorrect(false);
+    triggerFade("light", () => {
+      const nextIndex = index + 1;
+      if (nextIndex >= order.length) {
+        setOrder(shuffle(questionPool));
+        setIndex(0);
+      } else {
+        setIndex(nextIndex);
+      }
+      setSelected(null);
+      setFreeResponse("");
+      setAnswered(false);
+      setIsCorrect(false);
+    });
   }
 
   function handleRestart() {

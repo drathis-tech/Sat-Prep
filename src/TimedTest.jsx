@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getSubjectPool, isAnswerCorrect, shuffle } from "./quizUtils";
 import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
+import { useScreenFade } from "./useScreenFade";
 
 const MODULES = [
   { id: "rw1", subject: "reading_writing", label: "Reading & Writing — Module 1", minutes: 32, count: 27 },
@@ -48,6 +49,7 @@ function emptyModuleAnswers() {
 }
 
 function TimedTest() {
+  const triggerFade = useScreenFade();
   const [phase, setPhase] = useState("intro"); // intro | running | results
   const [stageIndex, setStageIndex] = useState(0);
   const [moduleData, setModuleData] = useState(null);
@@ -62,16 +64,18 @@ function TimedTest() {
   const stage = MODULES[stageIndex];
 
   function startTest() {
-    setModuleData(buildModuleQuestions());
-    setModuleAnswers(emptyModuleAnswers());
-    setElapsedByModule({});
-    setStageIndex(0);
-    setQuestionIndex(0);
-    setSelected(null);
-    setFreeResponse("");
-    setSecondsRemaining(MODULES[0].minutes * 60);
-    setIsPaused(false);
-    setPhase("running");
+    triggerFade("full", () => {
+      setModuleData(buildModuleQuestions());
+      setModuleAnswers(emptyModuleAnswers());
+      setElapsedByModule({});
+      setStageIndex(0);
+      setQuestionIndex(0);
+      setSelected(null);
+      setFreeResponse("");
+      setSecondsRemaining(MODULES[0].minutes * 60);
+      setIsPaused(false);
+      setPhase("running");
+    });
   }
 
   function goToNextStage() {
@@ -95,11 +99,13 @@ function TimedTest() {
   }
 
   function handleTimeExpired() {
-    if (stage.isBreak) {
-      goToNextStage();
-    } else {
-      finalizeModule(stage.minutes * 60);
-    }
+    triggerFade("full", () => {
+      if (stage.isBreak) {
+        goToNextStage();
+      } else {
+        finalizeModule(stage.minutes * 60);
+      }
+    });
   }
 
   // Countdown: re-armed every render while running & not paused, so it
@@ -139,13 +145,18 @@ function TimedTest() {
   function handleNext() {
     recordCurrentAnswer();
     const isLastQuestion = questionIndex >= stage.count - 1;
-    if (isLastQuestion) {
-      finalizeModule(stage.minutes * 60 - secondsRemaining);
-    } else {
-      setQuestionIndex((i) => i + 1);
-      setSelected(null);
-      setFreeResponse("");
-    }
+    // Finishing a module is a real context change (new section, new timer)
+    // and gets the full fade; advancing within a module happens far more
+    // often in one sitting, so it stays light.
+    triggerFade(isLastQuestion ? "full" : "light", () => {
+      if (isLastQuestion) {
+        finalizeModule(stage.minutes * 60 - secondsRemaining);
+      } else {
+        setQuestionIndex((i) => i + 1);
+        setSelected(null);
+        setFreeResponse("");
+      }
+    });
   }
 
   function handleFreeResponseKeyDown(e) {
@@ -157,7 +168,7 @@ function TimedTest() {
   }
 
   function skipBreak() {
-    goToNextStage();
+    triggerFade("full", goToNextStage);
   }
 
   const showCalculator =
@@ -170,13 +181,13 @@ function TimedTest() {
       <>
         <header className="content-header">
           <div>
-            <h1 className="content-title">Timed Test</h1>
-            <p className="content-subtitle">Full digital SAT structure and timing</p>
+            <h1 className="content-title">Mission: Full Simulation</h1>
+            <p className="content-subtitle">Complete digital SAT structure and timing</p>
           </div>
         </header>
 
         <div className="question-card panel-narrow">
-          <h2>Before you begin</h2>
+          <h2>Mission Briefing</h2>
           <p>
             This simulates the real digital SAT: two Reading &amp; Writing modules, a break, then
             two Math modules. Once you submit an answer and move on, you can&apos;t go back to
@@ -193,7 +204,7 @@ function TimedTest() {
             ))}
           </ul>
           <button type="button" className="primary-btn" onClick={startTest}>
-            Begin Test
+            Launch Mission
           </button>
         </div>
       </>
@@ -215,8 +226,8 @@ function TimedTest() {
       <>
         <header className="content-header">
           <div>
-            <h1 className="content-title">Test Results</h1>
-            <p className="content-subtitle">Here's how you did</p>
+            <h1 className="content-title">Mission Debrief</h1>
+            <p className="content-subtitle">Here's how the mission went</p>
           </div>
         </header>
 
@@ -244,8 +255,12 @@ function TimedTest() {
               <span className="value">{formatDuration(totalSeconds)}</span>
             </div>
           </div>
-          <button type="button" className="primary-btn" onClick={() => setPhase("intro")}>
-            Retake Test
+          <button
+            type="button"
+            className="primary-btn"
+            onClick={() => triggerFade("full", () => setPhase("intro"))}
+          >
+            Relaunch Mission
           </button>
         </div>
       </>

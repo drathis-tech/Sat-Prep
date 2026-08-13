@@ -1,0 +1,240 @@
+.browse-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 7, 18, 0.72);
+  backdrop-filter: blur(3px);
+  animation: browse-backdrop-in 0.2s ease-out both;
+}
+
+@keyframes browse-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.browse-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: min(80vh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, var(--panel), var(--void-deep));
+  border: 1px solid var(--brass-dim);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px var(--shadow-lg);
+  overflow: hidden;
+  animation: browse-panel-in 0.22s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes browse-panel-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.browse-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.browse-title {
+  font-family: var(--display-face);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 1.1rem;
+  color: var(--starlight);
+}
+
+.browse-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: 1px solid var(--brass-dim);
+  border-radius: 8px;
+  color: var(--dim);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.browse-close:hover {
+  border-color: var(--brass);
+  color: var(--brass);
+}
+
+.browse-search {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 24px 0;
+  padding: 12px 16px;
+  background: rgba(7, 11, 28, 0.5);
+  border: 1px solid var(--brass-dim);
+  border-radius: 10px;
+}
+
+.browse-search-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.browse-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: var(--starlight);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.browse-search-input::placeholder {
+  color: var(--dim);
+}
+
+.browse-search-input:focus {
+  outline: none;
+}
+
+.browse-results {
+  padding: 20px 24px 24px;
+}
+
+.browse-results-count {
+  display: block;
+  margin-bottom: 16px;
+  color: var(--dim);
+  font-size: 0.88rem;
+}
+
+.browse-scroll {
+  overflow-y: auto;
+  padding: 20px 24px 24px;
+}
+
+.browse-all-btn {
+  width: 100%;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  font-family: var(--mono-face);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--void);
+  background: var(--brass);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease-out;
+}
+
+.browse-all-btn:hover {
+  background: var(--brass-bright);
+}
+
+.browse-all-btn:active {
+  transform: scale(0.98);
+}
+
+.browse-domains {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.browse-domain-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.browse-domain-btn {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--brass-dim);
+  padding-bottom: 6px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.browse-domain-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--starlight);
+}
+
+.browse-domain-btn:hover .browse-domain-name {
+  color: var(--brass);
+}
+
+.browse-domain-subject {
+  font-family: var(--mono-face);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.browse-skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.browse-skill-btn {
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.86rem;
+  color: var(--starlight-dim);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.browse-skill-btn:hover {
+  background: var(--brass-soft);
+  color: var(--starlight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .browse-backdrop,
+  .browse-panel {
+    animation: none !important;
+  }
+}
