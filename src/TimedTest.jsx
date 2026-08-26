@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
-import { getSubjectPool, isAnswerCorrect, shuffle } from "./quizUtils";
+import { useEffect, useRef, useState } from "react";
+import { getSubjectPool, isAnswerCorrect, parseChoice, shuffle } from "./quizUtils";
 import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 import { useScreenFade } from "./useScreenFade";
+import ReferenceSheet from "./ReferenceSheet";
+import "./Practice.css";
+import "./TimedTest.css";
 
 const MODULES = [
   { id: "rw1", subject: "reading_writing", label: "Reading & Writing — Module 1", minutes: 32, count: 27 },
@@ -48,7 +51,30 @@ function emptyModuleAnswers() {
   };
 }
 
-function TimedTest() {
+// Every screen wears the same shell: crumbs on the left, Exit on the right.
+function Shell({ crumb, children, right, onExit }) {
+  return (
+    <div className="pr-screen">
+      <div className="pr-head">
+        <div className="pr-crumbs">
+          <span className="pr-crumb-app">Vega / Full test</span>
+          {crumb && <span className="pr-crumb-domain">{crumb}</span>}
+        </div>
+        <div className="pr-head-right">
+          {right}
+          {onExit && (
+            <button type="button" className="pr-pill" onClick={onExit}>
+              Exit
+            </button>
+          )}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TimedTest({ onExit }) {
   const triggerFade = useScreenFade();
   const [phase, setPhase] = useState("intro"); // intro | running | results
   const [stageIndex, setStageIndex] = useState(0);
@@ -60,6 +86,13 @@ function TimedTest() {
   const [freeResponse, setFreeResponse] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [refOpen, setRefOpen] = useState(false);
+  const bodyRef = useRef(null);
+  // triggerFade defers its callback, so a second Next landing before the
+  // first one runs would advance twice off one question — past the end of
+  // the module, in the worst case. One advance in flight at a time.
+  const advancingRef = useRef(false);
 
   const stage = MODULES[stageIndex];
 
@@ -79,6 +112,7 @@ function TimedTest() {
   }
 
   function goToNextStage() {
+    advancingRef.current = false;
     const nextIndex = stageIndex + 1;
     if (nextIndex >= MODULES.length) {
       setPhase("results");
@@ -143,6 +177,8 @@ function TimedTest() {
   }
 
   function handleNext() {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
     recordCurrentAnswer();
     const isLastQuestion = questionIndex >= stage.count - 1;
     // Finishing a module is a real context change (new section, new timer)
@@ -155,7 +191,9 @@ function TimedTest() {
         setQuestionIndex((i) => i + 1);
         setSelected(null);
         setFreeResponse("");
+        if (bodyRef.current) bodyRef.current.scrollTop = 0;
       }
+      advancingRef.current = false;
     });
   }
 
@@ -171,219 +209,293 @@ function TimedTest() {
     triggerFade("full", goToNextStage);
   }
 
-  const showCalculator =
-    phase === "running" && !stage.isBreak && !isPaused && stage.subject === "math";
-
-  let body;
+  const isMath = phase === "running" && !stage.isBreak && stage.subject === "math";
+  const showCalculator = isMath && !isPaused;
 
   if (phase === "intro") {
-    body = (
-      <>
-        <header className="content-header">
-          <div>
-            <h1 className="content-title">Mission: Full Simulation</h1>
-            <p className="content-subtitle">Complete digital SAT structure and timing</p>
-          </div>
-        </header>
-
-        <div className="question-card panel-narrow">
-          <h2>Mission Briefing</h2>
-          <p>
-            This simulates the real digital SAT: two Reading &amp; Writing modules, a break, then
-            two Math modules. Once you submit an answer and move on, you can&apos;t go back to
-            change it. You can pause at any time to step away without losing time.
-          </p>
-          <ul className="intro-modules">
-            {MODULES.map((m) => (
-              <li key={m.id} className={m.isBreak ? "is-break" : ""}>
-                <span>{m.isBreak ? "Break" : m.label}</span>
-                <span>
-                  {m.minutes} min{!m.isBreak ? ` · ${m.count} questions` : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <button type="button" className="primary-btn" onClick={startTest}>
-            Launch Mission
-          </button>
-        </div>
-      </>
-    );
-  } else if (phase === "results") {
-    const moduleResults = QUESTION_MODULES.map((m) => {
-      const answers = moduleAnswers[m.id] || [];
-      const correct = answers.filter((a) => a && a.correct).length;
-      return { ...m, correct, total: m.count };
-    });
-    const overallCorrect = moduleResults.reduce((sum, m) => sum + m.correct, 0);
-    const overallTotal = moduleResults.reduce((sum, m) => sum + m.total, 0);
-    const totalSeconds = moduleResults.reduce(
-      (sum, m) => sum + (elapsedByModule[m.id] || 0),
-      0
-    );
-
-    body = (
-      <>
-        <header className="content-header">
-          <div>
-            <h1 className="content-title">Mission Debrief</h1>
-            <p className="content-subtitle">Here's how the mission went</p>
-          </div>
-        </header>
-
-        <div className="question-card panel-narrow">
-          <h2>Score Summary</h2>
-          <ul className="results-modules">
-            {moduleResults.map((m) => (
-              <li key={m.id}>
-                <span>{m.label}</span>
-                <span>
-                  {m.correct}/{m.total}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div className="results-summary">
-            <div className="results-summary-row">
-              <span>Overall Score</span>
-              <span className="value">
-                {overallCorrect}/{overallTotal}
-              </span>
-            </div>
-            <div className="results-summary-row">
-              <span>Total Time Used</span>
-              <span className="value">{formatDuration(totalSeconds)}</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="primary-btn"
-            onClick={() => triggerFade("full", () => setPhase("intro"))}
-          >
-            Relaunch Mission
-          </button>
-        </div>
-      </>
-    );
-  } else if (stage.isBreak) {
-    // phase === "running"
-    body = (
-      <>
-        <header className="content-header">
-          <div>
-            <h1 className="content-title">Break</h1>
-            <p className="content-subtitle">Reading &amp; Writing is done — Math is next</p>
-          </div>
-        </header>
-
-        <div className="question-card panel-narrow panel-center">
-          <h2>Take a breather</h2>
-          <div className="break-timer">{formatClock(secondsRemaining)}</div>
-          <p>You can wait for the break to end, or skip it and start Math right away.</p>
-          <button type="button" className="primary-btn" onClick={skipBreak}>
-            Skip Break
-          </button>
-        </div>
-      </>
-    );
-  } else if (isPaused) {
-    body = (
-      <>
-        <header className="content-header">
-          <div>
-            <h1 className="content-title">{stage.label}</h1>
-            <p className="content-subtitle">Timer paused</p>
-          </div>
-        </header>
-
-        <div className="question-card panel-narrow panel-center">
-          <h2>Test Paused</h2>
-          <p>Your timer is stopped and the question is hidden. Resume when you're ready.</p>
-          <button type="button" className="primary-btn" onClick={togglePause}>
-            Resume
-          </button>
-        </div>
-      </>
-    );
-  } else {
-    const currentQuestion = moduleData[stage.id][questionIndex];
-    const lowTime = secondsRemaining <= 300;
-
-    body = (
-      <>
-        <div className="page-topbar">
-          <span className="page-topbar-label">{stage.label} · No going back once you hit Next</span>
-        </div>
-
-        <main className="question-card">
-          <div className="timed-header">
-            <span className="timed-progress">
-              Question {questionIndex + 1} of {stage.count}
-            </span>
-            <div className="timer-controls">
-              <span className={`timer-badge${lowTime ? " low-time" : ""}`}>
-                {formatClock(secondsRemaining)}
-              </span>
-              <button type="button" className="pause-btn" onClick={togglePause}>
-                Pause
+    return (
+      <Shell onExit={onExit}>
+        <div className="tt-pane">
+          <div className="tt-pane-inner">
+            <h1 className="tt-title">Full simulation</h1>
+            <p className="tt-lede">
+              The real digital SAT&apos;s structure and timing: two Reading &amp; Writing modules,
+              a break, then two Math modules. Once you move on from a question you can&apos;t go
+              back to it. You can pause at any time to step away without losing time.
+            </p>
+            <ul className="tt-modules">
+              {MODULES.map((m) => (
+                <li className="tt-module" key={m.id} data-break={m.isBreak ? "" : undefined}>
+                  <span>{m.isBreak ? "Break" : m.label}</span>
+                  <span className="tt-module-meta">
+                    {m.minutes} min{m.isBreak ? "" : ` · ${m.count} questions`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="tt-actions">
+              <button type="button" className="pr-btn-primary" onClick={startTest}>
+                Start the test
               </button>
             </div>
           </div>
-
-          <p className="question-text">{renderMath(currentQuestion.text)}</p>
-
-          {currentQuestion.image && (
-            <div className="question-image-frame">
-              <img
-                className="question-image"
-                src={`/question-images/${currentQuestion.image}`}
-                alt="Diagram for this question"
-              />
-            </div>
-          )}
-
-          {currentQuestion.type === "multiple_choice" ? (
-            <div className="choices">
-              {currentQuestion.choices.map((choice) => {
-                const letter = choice.trim().charAt(0);
-                const isSelected = selected === letter;
-                return (
-                  <button
-                    key={letter}
-                    type="button"
-                    className={`choice-btn${isSelected ? " selected" : ""}`}
-                    onClick={() => handleSelectChoice(letter)}
-                  >
-                    {renderMath(choice)}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="free-response">
-              <input
-                type="text"
-                className="free-response-input"
-                placeholder="Type your answer"
-                value={freeResponse}
-                onChange={(e) => setFreeResponse(e.target.value)}
-                onKeyDown={handleFreeResponseKeyDown}
-              />
-            </div>
-          )}
-
-          <button type="button" className="primary-btn" onClick={handleNext}>
-            Next
-          </button>
-        </main>
-      </>
+        </div>
+      </Shell>
     );
   }
 
+  if (phase === "results") {
+    const moduleResults = QUESTION_MODULES.map((m) => {
+      const answers = moduleAnswers[m.id] || [];
+      return { ...m, correct: answers.filter((a) => a && a.correct).length, total: m.count };
+    });
+    const overallCorrect = moduleResults.reduce((sum, m) => sum + m.correct, 0);
+    const overallTotal = moduleResults.reduce((sum, m) => sum + m.total, 0);
+    const totalSeconds = moduleResults.reduce((sum, m) => sum + (elapsedByModule[m.id] || 0), 0);
+    const pct = overallTotal ? Math.round((overallCorrect / overallTotal) * 100) : 0;
+
+    return (
+      <Shell crumb="Debrief" onExit={onExit}>
+        <div className="tt-pane">
+          <div className="tt-pane-inner">
+            <div className="tt-score">
+              <span className="tt-score-pct">{pct}%</span>
+              <span className="tt-score-tally">
+                {overallCorrect} of {overallTotal} correct
+              </span>
+            </div>
+
+            <div className="tt-rows">
+              {moduleResults.map((m, i) => (
+                <div className="tt-row" key={m.id}>
+                  <div className="tt-row-head">
+                    <span className="tt-row-label">{m.label}</span>
+                    <span className="tt-row-meta">
+                      <span>
+                        {m.correct} / {m.total}
+                      </span>
+                      <span className="tt-row-time">
+                        {formatDuration(elapsedByModule[m.id] || 0)}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="tt-row-track">
+                    <div
+                      className="tt-row-bar"
+                      data-band={
+                        m.correct === m.total ? "all" : m.correct === 0 ? "none" : "some"
+                      }
+                      style={{ "--score": m.correct / m.total, "--delay": `${140 + i * 55}ms` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="tt-totals">
+              <div className="tt-total">
+                <span className="tt-total-label">Total time used</span>
+                <span className="tt-total-value">{formatDuration(totalSeconds)}</span>
+              </div>
+              <div className="tt-total">
+                <span className="tt-total-label">Questions answered</span>
+                <span className="tt-total-value">
+                  {QUESTION_MODULES.reduce(
+                    (n, m) => n + (moduleAnswers[m.id] || []).filter((a) => a && a.answer).length,
+                    0,
+                  )}{" "}
+                  / {overallTotal}
+                </span>
+              </div>
+            </div>
+
+            <div className="tt-actions">
+              <button
+                type="button"
+                className="pr-btn-primary"
+                onClick={() => triggerFade("full", () => setPhase("intro"))}
+              >
+                Run it again
+              </button>
+              {onExit && (
+                <button type="button" className="pr-btn-ghost" onClick={onExit}>
+                  Back to Vega
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (stage.isBreak) {
+    return (
+      <Shell crumb="Break" onExit={onExit}>
+        <div className="tt-pane">
+          <div className="tt-pane-inner">
+            <span className="pr-label">Reading &amp; Writing done — Math next</span>
+            <div className="tt-bigclock">{formatClock(secondsRemaining)}</div>
+            <p className="tt-lede">
+              Step away if you want. The break ends on its own, or you can start Math now.
+            </p>
+            <div className="tt-actions">
+              <button type="button" className="pr-btn-primary" onClick={skipBreak}>
+                Skip the break
+              </button>
+            </div>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  if (isPaused) {
+    return (
+      <Shell crumb={stage.label} onExit={onExit}>
+        <div className="tt-pane">
+          <div className="tt-pane-inner">
+            <span className="pr-label">Timer paused</span>
+            <div className="tt-bigclock">{formatClock(secondsRemaining)}</div>
+            <p className="tt-lede">
+              The clock is stopped and the question is hidden. Resume when you&apos;re ready.
+            </p>
+            <div className="tt-actions">
+              <button type="button" className="pr-btn-primary" onClick={togglePause}>
+                Resume
+              </button>
+            </div>
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
+  const currentQuestion = moduleData[stage.id][questionIndex];
+  if (!currentQuestion) return null;
+  const lowTime = secondsRemaining <= 300;
+  const progress = stage.count ? questionIndex / stage.count : 0;
+
   return (
     <>
-      <Calculator show={showCalculator} />
-      {body}
+      <Shell
+        crumb={stage.label}
+        onExit={onExit}
+        right={
+          <>
+            <span className="tt-clock" data-low={lowTime ? "" : undefined} aria-live="off">
+              {formatClock(secondsRemaining)}
+            </span>
+            <button type="button" className="pr-pill" onClick={togglePause}>
+              Pause
+            </button>
+          </>
+        }
+      >
+        <div className="pr-progress">
+          <div className="pr-progress-bar" style={{ "--progress": progress }} />
+        </div>
+
+        <div className="pr-body" ref={bodyRef}>
+          <div className="pr-cols">
+            {currentQuestion.passage && (
+              <div className="pr-passage">
+                <span className="pr-label">Passage</span>
+                <div className="pr-passage-text">{renderMath(currentQuestion.passage)}</div>
+              </div>
+            )}
+
+            <div className="pr-main">
+              <span className="pr-label">
+                Question {questionIndex + 1} of {stage.count}
+              </span>
+
+              <p className="pr-question">{renderMath(currentQuestion.text)}</p>
+
+              {currentQuestion.image && (
+                <div className="pr-figure">
+                  <img
+                    src={`/question-images/${currentQuestion.image}`}
+                    alt="Figure for this question"
+                  />
+                </div>
+              )}
+
+              {currentQuestion.type === "multiple_choice" ? (
+                <div className="pr-choices">
+                  {currentQuestion.choices.map((choice, ci) => {
+                    const { letter, body } = parseChoice(choice, ci);
+                    const picked = selected === letter;
+                    return (
+                      <button
+                        type="button"
+                        key={letter}
+                        className="pr-choice"
+                        data-state={picked ? "selected" : "idle"}
+                        aria-pressed={picked}
+                        onClick={() => handleSelectChoice(letter)}
+                      >
+                        <span className="pr-badge">{letter}</span>
+                        <span className="pr-choice-body">{renderMath(body)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="pr-fr">
+                  <input
+                    type="text"
+                    placeholder="Type your answer"
+                    value={freeResponse}
+                    onChange={(e) => setFreeResponse(e.target.value)}
+                    onKeyDown={handleFreeResponseKeyDown}
+                    aria-label="Your answer"
+                  />
+                  <span className="pr-fr-hint">
+                    Student-produced response — enter a number or short phrase
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="pr-foot">
+          <div className="pr-foot-group">
+            {isMath && (
+              <>
+                <button
+                  type="button"
+                  className="pr-pill"
+                  aria-pressed={calcOpen}
+                  onClick={() => setCalcOpen((o) => !o)}
+                >
+                  Calculator
+                </button>
+                <button
+                  type="button"
+                  className="pr-pill"
+                  aria-pressed={refOpen}
+                  onClick={() => setRefOpen((o) => !o)}
+                >
+                  Reference
+                </button>
+              </>
+            )}
+            <span className="tt-warning">No going back once you continue</span>
+          </div>
+
+          <div className="pr-foot-group">
+            <button type="button" className="pr-btn-primary" onClick={handleNext}>
+              {questionIndex >= stage.count - 1 ? "Finish module" : "Next question"}
+            </button>
+          </div>
+        </div>
+
+        {refOpen && <ReferenceSheet onClose={() => setRefOpen(false)} />}
+      </Shell>
+
+      <Calculator show={showCalculator} open={calcOpen} onOpenChange={setCalcOpen} />
     </>
   );
 }

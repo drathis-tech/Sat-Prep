@@ -1,0 +1,267 @@
+/* Timed test — the five screens of a full simulation: briefing, a running
+   module, the break, a pause, and the debrief.
+
+   The question body itself reuses the .pr-* classes from Practice.css, since
+   a question is a question; only what surrounds it differs. What's here is
+   the chrome that practice has no equivalent for — the clock, the module
+   list, and the per-module debrief. */
+
+.tt-clock {
+  flex: none;
+  white-space: nowrap;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #cddcec;
+  font-variant-numeric: tabular-nums;
+  transition: color 300ms ease;
+}
+
+/* Last five minutes. The colour shift is the whole warning, so it also
+   pulses — a static red reads as decoration once you've been staring at
+   the clock for half an hour. */
+.tt-clock[data-low] {
+  color: #e0a8a8;
+  animation: tt-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tt-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-clock[data-low] {
+    animation: none;
+  }
+}
+
+.tt-warning {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f8399;
+}
+
+/* ---------- centred screens: briefing, break, pause, debrief ---------- */
+
+.tt-pane {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: clamp(32px, 6vh, 72px) clamp(20px, 4vw, 48px) 48px;
+}
+
+.tt-pane-inner {
+  width: 100%;
+  max-width: 620px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: auto 0;
+}
+
+.tt-title {
+  margin: 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+}
+
+.tt-lede {
+  margin: 0;
+  font-size: 16px;
+  line-height: 26px;
+  color: #98a6b6;
+  text-wrap: pretty;
+}
+
+.tt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ---------- module list on the briefing ---------- */
+
+.tt-modules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tt-module {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #1a1a1a;
+  padding: 14px 0;
+  font-size: 15px;
+  color: #e8eef6;
+}
+
+.tt-module:last-child {
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.tt-module[data-break] {
+  color: #6f8399;
+  font-style: italic;
+}
+
+.tt-module-meta {
+  flex: none;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #8b9cb0;
+}
+
+/* ---------- break / pause ---------- */
+
+/* Big enough to read from across the room — you are meant to walk away
+   from it. */
+.tt-bigclock {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(72px, 16vw, 148px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- debrief ---------- */
+
+.tt-score {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.tt-score-pct {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(56px, 9vw, 92px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+}
+
+.tt-score-tally {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: #8b9cb0;
+}
+
+.tt-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.tt-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 18px 0;
+}
+
+.tt-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.tt-row-label {
+  font-size: 16px;
+  line-height: 24px;
+  color: #f2f5f9;
+}
+
+.tt-row-meta {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #8b9cb0;
+}
+
+.tt-row-time {
+  color: #55657a;
+}
+
+.tt-row-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #191919;
+}
+
+.tt-row-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: #cbb98a;
+  transform-origin: left center;
+  transform: scaleX(var(--score, 0));
+  transition: transform 620ms cubic-bezier(0.23, 1, 0.32, 1) var(--delay, 0ms);
+}
+
+.tt-row-bar[data-band="none"] {
+  background: #d99a9a;
+}
+
+.tt-row-bar[data-band="all"] {
+  background: #8fd3a8;
+}
+
+.tt-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+  border-top: 1px solid #272727;
+  padding-top: 22px;
+}
+
+.tt-total {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tt-total-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #6f8399;
+}
+
+.tt-total-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 18px;
+  color: #e8eef6;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-row-bar {
+    transition-duration: 1ms;
+  }
+}

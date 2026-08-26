@@ -594,10 +594,10 @@
 
 /* ---------------------------------------------------------------------
    App shell
-   Chrome shared by the practice and timed-test screens. These rules used
-   to hang off the deleted ConceptOrrery hub component — PracticeMode,
-   TimedTest and BrowsePanel render inside the shell and inherit its type
-   tokens, so they have to live somewhere.
+   The orrery, practice and the timed test each bring their own full-screen
+   chrome, so what is left here is what BrowsePanel needs: the type tokens
+   and resets it inherits (these used to hang off the deleted ConceptOrrery
+   component) and the two controls it borrows.
    ------------------------------------------------------------------ */
 
 .app-shell {
@@ -646,88 +646,9 @@
   text-wrap: balance;
 }
 
-/* ---------- Top nav (back to the hub from practice/timed) ---------- */
-
-.orrery-topnav {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 3;
-  display: flex;
-  gap: 10px;
-}
-
-.orrery-nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  font-family: var(--mono-face);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--brass);
-  background: rgba(14, 23, 56, 0.6);
-  border: 1px solid var(--brass-dim);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.orrery-nav-link:hover {
-  border-color: var(--brass);
-  color: #f0cf8a;
-}
-
-/* ---------- HUD: browse/search trigger ---------- */
-
-.orrery-hud-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 150;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  font-family: var(--mono-face);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--brass);
-  background: rgba(14, 23, 56, 0.6);
-  border: 1px solid var(--brass-dim);
-  border-radius: 999px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
-}
-
-.orrery-hud-btn:hover {
-  border-color: var(--brass);
-  color: #f0cf8a;
-}
-
-.orrery-hud-btn svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* ---------- Screen body ---------- */
-
-.orrery-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: clamp(72px, 12vh, 100px) 24px 40px;
-}
-
 /* ---------- Shared controls ---------- */
-/* Still used by BrowsePanel's "Practice all questions" button and its
-   "Browse by domain" heading. */
+/* BrowsePanel's "Practice all questions" button and "Browse by domain"
+   heading are the only remaining users. */
 
 .concept-sub-label {
   display: block;

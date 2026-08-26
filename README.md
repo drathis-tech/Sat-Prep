@@ -104,7 +104,7 @@ vercel.json                 # Vercel build configuration
   advanced by wheel, arrow keys, swipe, or the tick rail
 - **practice** (`src/PracticeMode.jsx`), a filtered set of up to 30 questions
   ending in a per-skill results breakdown
-- **the timed test**, a full digital-SAT simulation
+- **the timed test** (`src/TimedTest.jsx`), a full digital-SAT simulation
 
 Stage 0 of the orrery launches the timed test; stages 1-8 are the eight SAT
 domains, and each carries the exact `subject`/`domain` pair from the question
@@ -152,3 +152,23 @@ which is the ordering that makes it useful.
 Choices normally read `"A. …"`; the letter is parsed off for the badge, and a
 choice missing its prefix falls back to its position so the badge and answer
 key stay in step.
+
+## The timed test
+
+Five screens sharing the practice screen's language: a briefing, a running
+module, the break, a pause, and the debrief. The question body reuses the
+`.pr-*` classes from `Practice.css` — a question is a question — while
+`TimedTest.css` holds only what practice has no equivalent for: the clock
+(which turns red and pulses for the last five minutes), the module list, the
+big break/pause clock, and the per-module debrief.
+
+Unlike practice it gives no feedback between questions, which is how the real
+test behaves. Math modules get the same Calculator and Reference controls.
+
+Both screens latch on advance (`advancingRef`): `triggerFade` defers its
+callback, so without it two fast clicks on Next advance twice off a single
+question — which used to run the index past the end of a module and blank the
+app. `Shell` is declared at module scope for the same class of reason: nested
+inside the component it would be a new component type every render, and the
+once-a-second clock tick would remount the question and drop focus out of the
+answer field.

@@ -63,3 +63,14 @@ export const domainGroups = (() => {
   }
   return order.map((key) => bySubjectDomain.get(key));
 })();
+
+const LETTERS = ["A", "B", "C", "D"];
+
+// Choices normally read "A. …" (a couple in the bank are missing the prefix
+// entirely, so fall back to position) — the letter drives both the badge and
+// the match against `correctAnswer`, so the two must agree.
+export function parseChoice(choice, index) {
+  const prefix = /^([A-D])[.)]\s*/.exec(choice.trim());
+  if (!prefix) return { letter: LETTERS[index], body: choice };
+  return { letter: prefix[1], body: choice.trim().slice(prefix[0].length) };
+}

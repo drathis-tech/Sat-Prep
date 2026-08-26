@@ -115,35 +115,7 @@ function AppShell({ entry, onExit }) {
           onExit={returnToOrrery}
         />
       ) : (
-        <>
-          <button
-            type="button"
-            className="orrery-hud-btn"
-            onClick={() => setBrowseOpen((o) => !o)}
-            aria-label="Browse and search all questions"
-          >
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path
-                d="M13.5 13.5 18 18M15.5 9a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
-            Browse
-          </button>
-
-          <nav className="orrery-topnav" aria-label="App navigation">
-            <button type="button" className="orrery-nav-link" onClick={returnToOrrery}>
-              &larr; Return to Orrery
-            </button>
-          </nav>
-
-          <div className="orrery-content">
-            <TimedTest />
-          </div>
-        </>
+        <TimedTest onExit={returnToOrrery} />
       )}
 
       {browseOpen && (
