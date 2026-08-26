@@ -1,0 +1,1095 @@
+/* Landing page — the marketing surface that sits in front of the Orrery app.
+   Converted from the standalone design bundle; the inline styles it shipped
+   with became classes here so hover/focus states (which inline styles can't
+   express) work, and so the Orrery overlay's nine stages can share one rule
+   set with only their filter and mask differing. */
+
+.landing {
+  position: relative;
+  width: 100%;
+  background: #000;
+  font-family: "Geist", system-ui, sans-serif;
+  color: #e8eef6;
+}
+
+.landing a {
+  color: #cfe0f2;
+  text-decoration: none;
+}
+
+.landing a:hover {
+  color: #fff;
+}
+
+.landing button:focus-visible,
+.landing a:focus-visible,
+.vg-orrery button:focus-visible,
+.vg-orrery a:focus-visible {
+  outline: 2px solid #9db0c6;
+  outline-offset: 3px;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes vg-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes vg-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+[data-rise] {
+  animation: vg-rise 620ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+/* Scroll-triggered reveal. The delay is set per element by the
+   IntersectionObserver in Landing.jsx so a batch entering together
+   cascades instead of every card firing at 0ms. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 520ms cubic-bezier(0.23, 1, 0.32, 1),
+    transform 520ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+[data-reveal][data-inview] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rise] {
+    animation-name: vg-fade !important;
+  }
+
+  [data-reveal] {
+    transform: none !important;
+    filter: none !important;
+  }
+
+  [data-stage],
+  [data-panel] {
+    transition-duration: 160ms !important;
+    transition-delay: 0ms !important;
+  }
+
+  [data-stage] {
+    transform: translate(0, -50%) !important;
+  }
+}
+
+/* ---------- hero ---------- */
+
+.vg-hero {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background: #050505;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  color: #e8eef6;
+}
+
+.vg-hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Inset past the edges so the pointer parallax never exposes a seam. */
+.vg-hero-planet {
+  position: absolute;
+  inset: -26px;
+  will-change: transform;
+}
+
+.vg-hero-planet img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  display: block;
+  mix-blend-mode: screen;
+}
+
+.vg-hero-bloom {
+  position: absolute;
+  left: -12%;
+  bottom: -34%;
+  width: 80%;
+  height: 70%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(96, 140, 190, 0.1), rgba(4, 5, 10, 0) 66%);
+  filter: blur(24px);
+}
+
+/* Two scrims: the design's top-down fade behind the header, plus a bottom
+   one so the stat row and note stay readable wherever the planet's bright
+   ring band happens to land at a given viewport ratio. */
+.vg-hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(4, 5, 10, 0.72) 0%,
+      rgba(4, 5, 10, 0.1) 34%,
+      rgba(4, 5, 10, 0) 60%
+    ),
+    linear-gradient(0deg, rgba(4, 5, 10, 0.66) 0%, rgba(4, 5, 10, 0) 22%);
+}
+
+.vg-hero-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 28px clamp(24px, 5vw, 64px) clamp(28px, 4vw, 44px);
+}
+
+/* ---------- header ---------- */
+
+.vg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.vg-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vg-wordmark-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #dce9f7;
+  box-shadow: 0 0 14px 3px rgba(190, 220, 250, 0.55);
+}
+
+.vg-wordmark-text {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #dbe6f2;
+}
+
+.vg-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 34px);
+  font-size: 14px;
+  color: #9db0c6;
+}
+
+.vg-nav-link {
+  color: #9db0c6;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.vg-nav-link:hover {
+  color: #fff;
+}
+
+/* Pill button — shared by the Orrery entry point and the overlay's Close. */
+.vg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  border: 1px solid rgba(168, 200, 234, 0.26);
+  border-radius: 999px;
+  background: rgba(140, 180, 224, 0.06);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #cddcec;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.vg-pill:hover {
+  background-color: rgba(150, 190, 230, 0.12);
+  border-color: rgba(190, 220, 248, 0.45);
+  color: #fff;
+}
+
+.vg-pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a8d2f4;
+  box-shadow: 0 0 10px 2px rgba(168, 210, 244, 0.5);
+}
+
+/* ---------- hero body ---------- */
+
+.vg-hero-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(32px, 7vh, 80px) 0 0;
+  max-width: 620px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.vg-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: center;
+  padding: 6px 12px 6px 10px;
+  border: 1px solid rgba(160, 195, 232, 0.22);
+  border-radius: 999px;
+  background: rgba(140, 180, 224, 0.05);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #b9cde2;
+  animation-delay: 60ms;
+}
+
+.vg-eyebrow-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a8d2f4;
+}
+
+.vg-hero-title {
+  margin: 20px 0 0;
+  font-family: "Raleway", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(34px, 4.6vw, 62px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+  text-wrap: pretty;
+  animation-duration: 700ms;
+  animation-delay: 110ms;
+}
+
+.vg-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+  animation-duration: 700ms;
+  animation-delay: 240ms;
+}
+
+.vg-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 20px;
+  border: 1px solid rgba(214, 232, 250, 0.5);
+  border-radius: 999px;
+  background: #e8f1fb;
+  color: #08111f;
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.vg-btn-primary:hover {
+  background-color: #fff;
+  color: #08111f;
+}
+
+.vg-btn-primary:active {
+  transform: scale(0.97);
+}
+
+.vg-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 17px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 200, 234, 0.26);
+  background: none;
+  color: #cddcec;
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.vg-btn-ghost:hover {
+  background-color: rgba(150, 190, 230, 0.09);
+  border-color: rgba(190, 220, 248, 0.45);
+  color: #fff;
+}
+
+.vg-btn-ghost:active {
+  transform: scale(0.97);
+}
+
+/* ---------- hero footer ---------- */
+
+.vg-hero-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding-top: 40px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #7186a0;
+  /* This row sits directly over the planet's bright ring band, so it needs
+     the same shadow the overlay footer uses to stay readable. */
+  text-shadow:
+    0 1px 10px rgba(2, 4, 8, 0.95),
+    0 0 26px rgba(2, 4, 8, 0.85);
+  animation-duration: 700ms;
+  animation-delay: 320ms;
+}
+
+.vg-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(20px, 4vw, 52px);
+}
+
+.vg-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.vg-stat-value {
+  color: #e6eef8;
+  font-size: 16px;
+  letter-spacing: 0;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.vg-hero-note {
+  max-width: 30ch;
+  line-height: 1.7;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- FAQ ---------- */
+
+.vg-section {
+  background: #000;
+  padding: 0 clamp(24px, 5vw, 64px) 96px;
+}
+
+.vg-section-top {
+  padding-top: 96px;
+}
+
+.vg-faq-wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.vg-h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f2f5f9;
+}
+
+.vg-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vg-faq-item {
+  border: 1px solid #272727;
+  border-radius: 12px;
+  background: #181818;
+  overflow: hidden;
+}
+
+.vg-faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  border: 0;
+  background: transparent;
+  color: #f2f5f9;
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.vg-faq-q:hover {
+  background-color: #1f1f1f;
+}
+
+.vg-faq-q:active {
+  background-color: #272727;
+}
+
+/* Plus that becomes a minus: the vertical bar scales to 0 when open. */
+.vg-faq-icon {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.vg-faq-icon::before,
+.vg-faq-icon::after {
+  content: "";
+  position: absolute;
+  background: #98a6b6;
+}
+
+.vg-faq-icon::before {
+  top: 7.5px;
+  left: 0;
+  width: 16px;
+  height: 1px;
+}
+
+.vg-faq-icon::after {
+  top: 0;
+  left: 7.5px;
+  width: 1px;
+  height: 16px;
+  transform: scaleY(1);
+  transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.vg-faq-item[data-open] .vg-faq-icon::after {
+  transform: scaleY(0);
+}
+
+/* grid-template-rows 0fr -> 1fr animates the height without a fixed value. */
+.vg-faq-a {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 320ms cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 200ms ease;
+}
+
+.vg-faq-item[data-open] .vg-faq-a {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.vg-faq-a > div {
+  overflow: hidden;
+}
+
+.vg-faq-a p {
+  margin: 0;
+  padding: 0 24px 24px;
+  font-size: 16px;
+  line-height: 24px;
+  color: #98a6b6;
+  max-width: 680px;
+  text-wrap: pretty;
+}
+
+/* ---------- account card ---------- */
+
+.vg-account {
+  max-width: 1080px;
+  margin: 0 auto;
+  border: 1px solid #272727;
+  border-radius: 24px;
+  background: #131209;
+  padding: 64px clamp(24px, 5vw, 48px);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.vg-account-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 680px;
+}
+
+.vg-account h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f7f4ea;
+}
+
+.vg-account p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: #b3ac95;
+}
+
+.vg-account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #f7f4ea;
+  color: #131209;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 200ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.vg-account-btn:hover {
+  background-color: #fff;
+  color: #131209;
+}
+
+.vg-account-btn:active {
+  transform: scale(0.98);
+}
+
+/* ---------- Orrery overlay ---------- */
+/* A full-screen tour of the eight domains: one planet on stage at a time,
+   advanced by wheel or arrow keys. Each stage's "start" button hands the
+   matching filter to the real Orrery app. */
+
+.vg-orrery {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  background: radial-gradient(ellipse 120% 90% at 50% 50%, #0a1020 0%, #04050a 62%, #010204 100%);
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  color: #e8eef6;
+  animation: vg-fade 320ms ease both;
+}
+
+.vg-orrery-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px clamp(24px, 5vw, 64px) 28px calc(38vh + clamp(20px, 3vw, 56px));
+}
+
+.vg-orrery-crumb {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b9c8da;
+  text-shadow:
+    0 1px 10px rgba(2, 4, 8, 0.95),
+    0 0 26px rgba(2, 4, 8, 0.85);
+}
+
+.vg-orrery-stagelayer {
+  position: absolute;
+  inset: 0;
+}
+
+/* Planets rise through the frame: waiting layers wait below, spent layers
+   exit above. The transform is set imperatively in Landing.jsx. */
+.vg-stage {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 58vh;
+  height: 106vh;
+  opacity: 0;
+  transform: translate(0, calc(-50% + 16vh));
+  transition:
+    opacity 480ms linear,
+    transform 880ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vg-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 0% 50%;
+  display: block;
+  mix-blend-mode: screen;
+  filter: var(--stage-filter, none);
+}
+
+/* Two mask treatments: a wide right-hand falloff, and a tighter one that
+   also feathers top and bottom. */
+.vg-stage-mask-wide img {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 58%,
+    rgba(0, 0, 0, 0.55) 84%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0%,
+    #000 58%,
+    rgba(0, 0, 0, 0.55) 84%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.vg-stage-mask-tight img {
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      #000 0%,
+      #000 44%,
+      rgba(0, 0, 0, 0.62) 72%,
+      rgba(0, 0, 0, 0.16) 90%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, #000 7%, #000 93%, rgba(0, 0, 0, 0.55) 100%);
+  mask-image:
+    linear-gradient(
+      to right,
+      #000 0%,
+      #000 44%,
+      rgba(0, 0, 0, 0.62) 72%,
+      rgba(0, 0, 0, 0.16) 90%,
+      rgba(0, 0, 0, 0) 100%
+    ),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.55) 0%, #000 7%, #000 93%, rgba(0, 0, 0, 0.55) 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* ---------- overlay copy panels ---------- */
+
+.vg-orrery-panels {
+  position: absolute;
+  z-index: 6;
+  left: calc(50vh + clamp(20px, 3vw, 56px));
+  top: 50%;
+  right: 372px;
+  height: 0;
+}
+
+/* The copy follows the planet rather than travelling with it, so the
+   transition delay is applied imperatively when a panel becomes active. */
+.vg-panel {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 34ch;
+  opacity: 0;
+  transform: translateY(-34%);
+  transition:
+    opacity 400ms linear,
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.vg-panel-index {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: #6f8399;
+}
+
+.vg-panel h3 {
+  margin: 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(30px, 3.8vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+}
+
+.vg-panel p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #93a5ba;
+  text-wrap: pretty;
+}
+
+.vg-panel-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 11px 18px 11px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(168, 200, 234, 0.3);
+  background: rgba(11, 19, 32, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #dce8f6;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: inherit;
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.vg-panel-btn:hover {
+  background: rgba(24, 38, 58, 0.8);
+  border-color: rgba(190, 218, 248, 0.5);
+  transform: translateY(-1px);
+  color: #fff;
+}
+
+/* ---------- overlay tick rail ---------- */
+
+.vg-ticks {
+  position: absolute;
+  z-index: 6;
+  right: clamp(24px, 5vw, 64px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  width: 320px;
+  padding-left: 22px;
+  border-left: 1px solid rgba(150, 190, 230, 0.16);
+}
+
+.vg-tick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.32;
+  transition: opacity 420ms ease;
+}
+
+.vg-tick[data-active] {
+  opacity: 1;
+}
+
+.vg-tick-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c5d9ee;
+  box-shadow: 0 0 12px 3px rgba(190, 218, 248, 0.35);
+  transition:
+    width 380ms ease,
+    height 380ms ease;
+}
+
+.vg-tick[data-active] .vg-tick-dot {
+  width: 9px;
+  height: 9px;
+  background: #cfe3f8;
+}
+
+.vg-tick-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c3d4e6;
+}
+
+/* ---------- overlay footer ---------- */
+
+.vg-orrery-foot {
+  position: absolute;
+  z-index: 9;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 clamp(24px, 5vw, 64px) clamp(24px, 4vw, 40px);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6f8399;
+  text-shadow:
+    0 1px 10px rgba(2, 4, 8, 0.95),
+    0 0 26px rgba(2, 4, 8, 0.85);
+}
+
+.vg-orrery-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vg-orrery-hint::before {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: #43536b;
+}
+
+/* Only one gesture hint applies per device: pointer devices scroll, touch
+   devices swipe. */
+.vg-hint-touch {
+  display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .vg-hint-pointer {
+    display: none;
+  }
+
+  .vg-hint-touch {
+    display: inline;
+  }
+}
+
+/* Below this the side-by-side planet/copy/rail layout has nowhere to go, so
+   the labelled rail collapses to a row of dots along the bottom and the copy
+   sits over the planet instead. */
+@media (max-width: 900px) {
+  .vg-orrery-panels {
+    left: clamp(24px, 5vw, 64px);
+    right: clamp(24px, 5vw, 64px);
+  }
+
+  .vg-orrery-bar {
+    padding-left: clamp(24px, 5vw, 64px);
+  }
+
+  /* The active stage carries an inline opacity, so the planet has to be
+     dimmed on the image itself to let the copy read over it. */
+  .vg-stage img {
+    opacity: 0.32;
+  }
+
+  .vg-panel h3,
+  .vg-panel p,
+  .vg-panel-index {
+    text-shadow:
+      0 1px 10px rgba(2, 4, 8, 0.95),
+      0 0 26px rgba(2, 4, 8, 0.85);
+  }
+
+  .vg-panel h3 {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  /* The dots stay: they are the only visible affordance that there are nine
+     stages, and the only tap target for jumping between them. */
+  .vg-ticks {
+    top: auto;
+    /* Clears the footer, which wraps to two rows at this width. */
+    bottom: 108px;
+    left: clamp(24px, 5vw, 64px);
+    right: clamp(24px, 5vw, 64px);
+    width: auto;
+    transform: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .vg-tick-label {
+    /* Kept for screen readers; there is no room for nine labels here. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .vg-tick {
+    padding: 6px;
+  }
+}
+
+/* Fixed star dots behind the stage — a generated field, kept verbatim from
+   the design so the constellation is identical to the original. */
+.vg-orrery-stars {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle 1.64px at 25.48% 89.38%, rgba(226, 238, 252, 0.25) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.75px at 91.20% 90.42%, rgba(226, 238, 252, 0.20) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.09px at 92.99% 79.36%, rgba(226, 238, 252, 0.50) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.26px at 18.64% 27.49%, rgba(226, 238, 252, 0.35) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.88px at 37.03% 65.17%, rgba(226, 238, 252, 0.64) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.71px at 6.43% 11.70%, rgba(226, 238, 252, 0.66) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.42px at 21.99% 68.15%, rgba(226, 238, 252, 0.25) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.66px at 10.25% 24.89%, rgba(226, 238, 252, 0.25) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.06px at 83.96% 75.06%, rgba(226, 238, 252, 0.36) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.02px at 12.15% 88.63%, rgba(226, 238, 252, 0.25) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.56px at 67.03% 11.30%, rgba(226, 238, 252, 0.34) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.99px at 24.50% 76.11%, rgba(226, 238, 252, 0.20) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.64px at 74.90% 89.43%, rgba(226, 238, 252, 0.47) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.03px at 26.36% 54.90%, rgba(226, 238, 252, 0.63) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.61px at 46.16% 58.89%, rgba(226, 238, 252, 0.41) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.68px at 87.08% 94.42%, rgba(226, 238, 252, 0.27) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.75px at 14.31% 12.96%, rgba(226, 238, 252, 0.32) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.64px at 96.73% 69.63%, rgba(226, 238, 252, 0.27) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.58px at 69.33% 64.35%, rgba(226, 238, 252, 0.56) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.69px at 1.27% 82.14%, rgba(226, 238, 252, 0.39) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.65px at 76.38% 71.64%, rgba(226, 238, 252, 0.51) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.92px at 12.25% 29.18%, rgba(226, 238, 252, 0.62) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.69px at 44.08% 16.76%, rgba(226, 238, 252, 0.49) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.11px at 46.55% 31.61%, rgba(226, 238, 252, 0.59) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.34px at 65.50% 65.15%, rgba(226, 238, 252, 0.51) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.74px at 10.56% 26.01%, rgba(226, 238, 252, 0.59) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.65px at 96.67% 74.37%, rgba(226, 238, 252, 0.35) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.62px at 44.60% 32.78%, rgba(226, 238, 252, 0.65) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.37px at 78.07% 6.52%, rgba(226, 238, 252, 0.27) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.62px at 60.24% 96.55%, rgba(226, 238, 252, 0.42) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.91px at 12.97% 44.83%, rgba(226, 238, 252, 0.21) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.86px at 75.30% 19.82%, rgba(226, 238, 252, 0.26) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.73px at 78.75% 82.20%, rgba(226, 238, 252, 0.51) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.00px at 4.52% 86.35%, rgba(226, 238, 252, 0.40) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.75px at 96.43% 79.40%, rgba(226, 238, 252, 0.54) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.52px at 46.44% 48.04%, rgba(226, 238, 252, 0.27) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.65px at 10.99% 27.29%, rgba(226, 238, 252, 0.35) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.27px at 0.87% 13.41%, rgba(226, 238, 252, 0.54) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.60px at 34.34% 10.56%, rgba(226, 238, 252, 0.64) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.60px at 83.98% 52.73%, rgba(226, 238, 252, 0.40) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.56px at 35.22% 3.88%, rgba(226, 238, 252, 0.20) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.00px at 50.02% 39.46%, rgba(226, 238, 252, 0.26) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.51px at 39.23% 72.99%, rgba(226, 238, 252, 0.50) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.33px at 93.13% 19.74%, rgba(226, 238, 252, 0.55) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.19px at 55.72% 94.25%, rgba(226, 238, 252, 0.65) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.51px at 29.45% 97.06%, rgba(226, 238, 252, 0.66) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.14px at 10.05% 25.31%, rgba(226, 238, 252, 0.37) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.37px at 38.00% 50.24%, rgba(226, 238, 252, 0.32) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.95px at 12.42% 81.67%, rgba(226, 238, 252, 0.67) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.39px at 61.69% 15.03%, rgba(226, 238, 252, 0.53) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.19px at 28.10% 93.90%, rgba(226, 238, 252, 0.32) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.64px at 94.67% 34.92%, rgba(226, 238, 252, 0.52) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.76px at 78.95% 56.42%, rgba(226, 238, 252, 0.24) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.65px at 30.81% 72.33%, rgba(226, 238, 252, 0.40) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.55px at 88.62% 13.30%, rgba(226, 238, 252, 0.49) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.63px at 1.73% 72.66%, rgba(226, 238, 252, 0.46) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.65px at 66.98% 37.07%, rgba(226, 238, 252, 0.65) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.72px at 48.90% 35.97%, rgba(226, 238, 252, 0.31) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.22px at 67.67% 55.15%, rgba(226, 238, 252, 0.62) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.68px at 86.01% 4.89%, rgba(226, 238, 252, 0.55) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.64px at 2.63% 36.72%, rgba(226, 238, 252, 0.42) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.78px at 71.77% 61.24%, rgba(226, 238, 252, 0.44) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.78px at 34.46% 7.32%, rgba(226, 238, 252, 0.42) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.31px at 88.96% 23.85%, rgba(226, 238, 252, 0.32) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.11px at 72.52% 84.13%, rgba(226, 238, 252, 0.46) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.81px at 54.99% 30.88%, rgba(226, 238, 252, 0.22) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.98px at 51.29% 22.49%, rgba(226, 238, 252, 0.22) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.25px at 49.20% 1.17%, rgba(226, 238, 252, 0.47) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.92px at 41.71% 1.96%, rgba(226, 238, 252, 0.42) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.45px at 29.55% 30.29%, rgba(226, 238, 252, 0.65) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.93px at 94.63% 19.67%, rgba(226, 238, 252, 0.55) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.63px at 20.70% 37.91%, rgba(226, 238, 252, 0.48) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.44px at 71.98% 97.85%, rgba(226, 238, 252, 0.50) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.55px at 26.03% 92.06%, rgba(226, 238, 252, 0.19) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.54px at 8.88% 54.05%, rgba(226, 238, 252, 0.47) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.90px at 45.36% 52.65%, rgba(226, 238, 252, 0.46) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.50px at 93.95% 91.36%, rgba(226, 238, 252, 0.28) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.54px at 66.69% 65.63%, rgba(226, 238, 252, 0.32) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.24px at 46.82% 52.66%, rgba(226, 238, 252, 0.43) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.66px at 73.36% 82.59%, rgba(226, 238, 252, 0.24) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.19px at 75.15% 80.26%, rgba(226, 238, 252, 0.45) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 0.86px at 56.21% 17.57%, rgba(226, 238, 252, 0.25) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.37px at 32.85% 83.66%, rgba(226, 238, 252, 0.50) 0%, rgba(226, 238, 252, 0) 100%),
+    radial-gradient(circle 1.12px at 81.00% 83.41%, rgba(226, 238, 252, 0.41) 0%, rgba(226, 238, 252, 0) 100%);
+}

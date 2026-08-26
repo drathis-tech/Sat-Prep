@@ -119,6 +119,30 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
 const EMPTY_FILTER = { subject: "all", domain: null, skill: null, searchQuery: null };
 
+// The landing page hands over an "entry intent" describing which screen the
+// user asked for, so a CTA there can open a filtered practice run or the
+// timed test directly instead of dropping everyone on the menu.
+function resolveEntry(entry) {
+  if (entry && entry.type === "timed") {
+    return { screen: "timed", slug: null, filter: EMPTY_FILTER, browse: false };
+  }
+  if (entry && entry.type === "browse") {
+    return { screen: "menu", slug: null, filter: EMPTY_FILTER, browse: true };
+  }
+  if (entry && entry.type === "domain") {
+    const concept = byslug[entry.slug];
+    if (concept) {
+      return {
+        screen: "practice",
+        slug: entry.slug,
+        filter: { subject: concept.subject, domain: concept.domain, skill: null, searchQuery: null },
+        browse: false,
+      };
+    }
+  }
+  return { screen: "menu", slug: null, filter: EMPTY_FILTER, browse: false };
+}
+
 // A single one-shot comet pass: a start point well outside the viewport,
 // travel in a straight line through (near) the visible area, to an exit
 // point equally far outside the opposite side.
@@ -213,12 +237,15 @@ function ConceptPanel({ concept, onBack, onStartPractice, onStartSkill }) {
   );
 }
 
-function ConceptOrrery() {
+function ConceptOrrery({ entry = null, onExit = null }) {
   const triggerFade = useScreenFade();
-  const [screen, setScreen] = useState("menu"); // menu | concept | practice | timed
-  const [activeSlug, setActiveSlug] = useState(null);
-  const [filter, setFilter] = useState(EMPTY_FILTER);
-  const [browseOpen, setBrowseOpen] = useState(false);
+  // Resolved once, on mount: a later change to `entry` is a stale intent for
+  // a screen the user has already navigated away from.
+  const [initial] = useState(() => resolveEntry(entry));
+  const [screen, setScreen] = useState(initial.screen); // menu | concept | practice | timed
+  const [activeSlug, setActiveSlug] = useState(initial.slug);
+  const [filter, setFilter] = useState(initial.filter);
+  const [browseOpen, setBrowseOpen] = useState(initial.browse);
   const [comets, setComets] = useState([]);
   const cometIdRef = useRef(0);
 
@@ -299,6 +326,11 @@ function ConceptOrrery() {
     });
   }
 
+  function returnToLanding() {
+    if (!onExit) return;
+    triggerFade("full", onExit);
+  }
+
   function handleBrowseFilter(nextFilter) {
     setBrowseOpen(false);
     startPractice(nextFilter);
@@ -349,13 +381,19 @@ function ConceptOrrery() {
         Browse
       </button>
 
-      {(screen === "practice" || screen === "timed") && (
-        <nav className="orrery-topnav" aria-label="Orrery navigation">
+      <nav className="orrery-topnav" aria-label="Orrery navigation">
+        {screen === "practice" || screen === "timed" ? (
           <button type="button" className="orrery-nav-link" onClick={returnToMenu}>
             &larr; Return to Orrery
           </button>
-        </nav>
-      )}
+        ) : (
+          onExit && (
+            <button type="button" className="orrery-nav-link" onClick={returnToLanding}>
+              &larr; Home
+            </button>
+          )
+        )}
+      </nav>
 
       <div className="comet-layer" aria-hidden="true">
         {comets.map((c) => (

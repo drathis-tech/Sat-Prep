@@ -41,6 +41,12 @@ body {
   background: var(--void);
 }
 
+/* The landing page is its own black surface, so the app's deep-blue void
+   would only show through on overscroll. */
+body:has(.landing) {
+  background: #000;
+}
+
 #root {
   width: 100%;
   min-height: 100svh;
