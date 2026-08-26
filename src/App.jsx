@@ -88,21 +88,12 @@ function AppShell({ entry, onExit }) {
 
   const pool = filter.searchQuery ? searchQuestions(filter.searchQuery) : filterQuestions(filter);
 
+  // Names the set on the results screen.
   let title = "All Questions";
-  let subtitle = "Randomized practice across Reading & Writing and Math";
-  if (filter.searchQuery) {
-    title = "Search Results";
-    subtitle = `"${filter.searchQuery}" · ${pool.length} question${pool.length === 1 ? "" : "s"}`;
-  } else if (filter.skill) {
-    title = filter.skill;
-    subtitle = `${subjectLabel(filter.subject)} · ${filter.domain}`;
-  } else if (filter.domain) {
-    title = filter.domain;
-    subtitle = `${subjectLabel(filter.subject)} · Randomized ${filter.domain} practice`;
-  } else if (filter.subject && filter.subject !== "all") {
-    title = subjectLabel(filter.subject);
-    subtitle = `Randomized ${subjectLabel(filter.subject)} practice`;
-  }
+  if (filter.searchQuery) title = `Search: ${filter.searchQuery}`;
+  else if (filter.skill) title = filter.skill;
+  else if (filter.domain) title = filter.domain;
+  else if (filter.subject && filter.subject !== "all") title = subjectLabel(filter.subject);
 
   const filterKey = `${filter.subject}|${filter.domain}|${filter.skill}|${filter.searchQuery}`;
 
@@ -115,6 +106,13 @@ function AppShell({ entry, onExit }) {
           onClose={onExit}
           onEnter={startFromStage}
           onBrowse={() => setBrowseOpen(true)}
+        />
+      ) : screen === "practice" ? (
+        <PracticeMode
+          key={filterKey}
+          questionPool={pool}
+          title={title}
+          onExit={returnToOrrery}
         />
       ) : (
         <>
@@ -143,10 +141,7 @@ function AppShell({ entry, onExit }) {
           </nav>
 
           <div className="orrery-content">
-            {screen === "practice" && (
-              <PracticeMode key={filterKey} questionPool={pool} title={title} subtitle={subtitle} />
-            )}
-            {screen === "timed" && <TimedTest />}
+            <TimedTest />
           </div>
         </>
       )}

@@ -8,8 +8,17 @@ import { useEffect, useRef, useState } from "react";
 // mounted for the lifetime of this component (i.e. for the whole Practice
 // or Timed Test session) — closing the panel only hides it via CSS, so
 // anything the student has typed survives moving to the next question.
-function Calculator({ show }) {
-  const [isOpen, setIsOpen] = useState(false);
+// When `open`/`onOpenChange` are supplied the panel is controlled from
+// outside and renders no toggle of its own — the practice screen drives it
+// from its own footer pill. Left uncontrolled, it keeps its built-in button
+// (which is how the timed test still uses it).
+function Calculator({ show, open, onOpenChange }) {
+  const controlled = open !== undefined;
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isOpen = controlled ? open : uncontrolledOpen;
+  const setIsOpen = controlled
+    ? (next) => onOpenChange(typeof next === "function" ? next(isOpen) : next)
+    : setUncontrolledOpen;
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState(null); // null = default bottom-right corner
 
@@ -76,7 +85,7 @@ function Calculator({ show }) {
 
   return (
     <>
-      {show && (
+      {show && !controlled && (
         <button
           type="button"
           className="calculator-toggle"

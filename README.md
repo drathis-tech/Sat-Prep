@@ -102,7 +102,8 @@ vercel.json                 # Vercel build configuration
 
 - **the orrery** (`src/Orrery.jsx`), the hub: nine full-screen planet stages,
   advanced by wheel, arrow keys, swipe, or the tick rail
-- **practice**, a filtered run of questions
+- **practice** (`src/PracticeMode.jsx`), a filtered set of up to 30 questions
+  ending in a per-skill results breakdown
 - **the timed test**, a full digital-SAT simulation
 
 Stage 0 of the orrery launches the timed test; stages 1-8 are the eight SAT
@@ -126,3 +127,28 @@ questions are added.
 Planet art lives in `public/landing/`. The nine orrery images (~16 MB total)
 are only requested once the orrery is opened, so they stay off the landing
 page's initial load.
+
+## The practice screen
+
+A full-screen takeover with its own header and Exit, so the app shell's Browse
+and Return chrome stands down while it is up. One question at a time:
+
+- multiple choice, or a free-response field, with the answer key and
+  explanation revealed on **Check answer**
+- a **Reference** sheet of the formulas the digital SAT provides, rendered
+  with KaTeX (`REFERENCE` in `PracticeMode.jsx`)
+- the **Calculator** pill drives the existing Desmos panel — `Calculator.jsx`
+  takes optional `open`/`onOpenChange` props and hides its own toggle when
+  controlled. The timed test still uses it uncontrolled, with its built-in
+  button
+- a **passage** column, rendered only when a question has a `passage` field.
+  Nothing in the bank has one yet, so it stays collapsed until some do
+
+A set is capped at `SET_SIZE` (30) — or the size of the pool, whichever is
+smaller — so that it ends and can be scored. Finishing one opens the results
+screen: overall percentage, then a per-skill tally sorted **weakest first**,
+which is the ordering that makes it useful.
+
+Choices normally read `"A. …"`; the letter is parsed off for the badge, and a
+choice missing its prefix falls back to its position so the badge and answer
+key stay in step.
