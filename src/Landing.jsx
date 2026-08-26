@@ -11,15 +11,15 @@ const METEORS = true;
 const FAQ = [
   {
     q: "Do I need an account?",
-    a: "No. Every test and question set opens without one. An account only saves your progress, score history, and skill breakdown so they follow you across devices.",
+    a: "No — there are no accounts at all. Every test and question set opens straight away. Nothing is stored between visits yet, so a set's results are gone once you leave it.",
   },
   {
     q: "Does this match the current test format?",
-    a: "Yes. Two Reading and Writing modules, two Math modules, and module two adapts based on how you did on module one, the way the digital test does.",
+    a: "The shape and timing match: two Reading and Writing modules, a break, then two Math modules. One difference worth knowing — module two does not yet adapt to how you did on module one, the way the real digital test does.",
   },
   {
     q: "How long is a full test?",
-    a: "Two hours and fourteen minutes including the built in break. Single sections can be run on their own when that is all the time you have.",
+    a: "Two hours and twenty four minutes, including the ten minute break. Single question sets can be run on their own when that is all the time you have.",
   },
   {
     q: "Where do the questions come from?",
@@ -27,7 +27,7 @@ const FAQ = [
   },
   {
     q: "Can I use a calculator?",
-    a: "A built in graphing calculator is available on both Math modules, the same as on test day.",
+    a: "Yes — a built in graphing calculator is available on both Math modules, along with the formula reference sheet, the same as on test day.",
   },
   {
     q: "What happens if I run out of time on a section?",
@@ -38,8 +38,8 @@ const FAQ = [
     a: "Practice sets and review do. Full length tests want a laptop or tablet, since that is what you will sit the real one on.",
   },
   {
-    q: "How is the score estimate calculated?",
-    a: "Raw correct counts are mapped onto the released scoring curve. Treat the output as a range rather than a single number, especially on your first two attempts.",
+    q: "What do I get at the end?",
+    a: "A question set reports the percentage you got right and a breakdown by skill, weakest first. A full test reports each module's raw score and the time you spent on it. There is no scaled 400 to 1600 estimate yet.",
   },
 ];
 
@@ -335,7 +335,7 @@ function Landing({ onEnter }) {
               </div>
             </div>
             <span className="vg-hero-note">
-              No account needed to start. Progress saves the moment you make one.
+              No account, no sign-up. Every question in the bank opens straight away.
             </span>
           </footer>
         </div>
@@ -377,14 +377,18 @@ function Landing({ onEnter }) {
       <section className="vg-section">
         <div className="vg-account" data-reveal>
           <div className="vg-account-copy">
-            <h2>Keep your score history in one place</h2>
+            <h2>The whole bank, open to everyone</h2>
             <p>
-              An account saves your tests, your skill breakdown, and where you left off. Everything
-              on this site works without one.
+              Every question and every full-length test is free to run, with nothing to sign up for
+              and nothing to pay. Pick a domain and start, or search the bank for a specific skill.
             </p>
           </div>
-          <button type="button" className="vg-account-btn" onClick={() => onEnter(null)}>
-            Create a free account
+          <button
+            type="button"
+            className="vg-account-btn"
+            onClick={() => onEnter({ type: "browse" })}
+          >
+            Browse the question bank
           </button>
         </div>
       </section>

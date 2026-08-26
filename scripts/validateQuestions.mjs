@@ -32,11 +32,34 @@ questions.forEach((q, index) => {
     if (!Array.isArray(q.choices) || q.choices.length < 2) {
       errors.push(`${where}: multiple_choice question needs a "choices" array with at least 2 options`);
     } else {
-      const letters = q.choices.map((c) => String(c).trim().charAt(0));
-      if (!letters.includes(q.correctAnswer)) {
-        errors.push(`${where}: "correctAnswer" (${JSON.stringify(q.correctAnswer)}) does not match any choice letter (${letters.join(", ")})`);
+      // Every option must carry its own "A. " style label. Two questions once
+      // shipped with a stray PDF-extraction fragment as an extra array entry,
+      // which shifted the labels and made the real answer unselectable — the
+      // old charAt(0) check waved it through, so this one is strict.
+      const EXPECTED = ["A", "B", "C", "D"];
+      if (q.choices.length !== 4) {
+        errors.push(`${where}: expected 4 choices, got ${q.choices.length}`);
       }
-      const dupLetters = letters.filter((l, i) => letters.indexOf(l) !== i);
+      const letters = [];
+      q.choices.forEach((c, ci) => {
+        const m = /^([A-D])[.)]\s/.exec(String(c).trim());
+        if (!m) {
+          errors.push(
+            `${where}: choice ${ci} does not start with an "A. " style label: ${JSON.stringify(String(c).trim().slice(0, 40))}`
+          );
+          letters.push(null);
+        } else {
+          letters.push(m[1]);
+        }
+      });
+      const present = letters.filter(Boolean);
+      if (present.length === 4 && present.join("") !== EXPECTED.join("")) {
+        errors.push(`${where}: choice letters should read A, B, C, D in order, got ${present.join(", ")}`);
+      }
+      if (!letters.includes(q.correctAnswer)) {
+        errors.push(`${where}: "correctAnswer" (${JSON.stringify(q.correctAnswer)}) does not match any choice letter (${present.join(", ") || "none"})`);
+      }
+      const dupLetters = present.filter((l, i) => present.indexOf(l) !== i);
       if (dupLetters.length) {
         errors.push(`${where}: duplicate choice letters: ${dupLetters.join(", ")}`);
       }

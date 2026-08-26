@@ -1293,35 +1293,36 @@ even among resolution makers, there isn’t a consistent age-related decline acr
     domain: `Information and Ideas`,
     skill: `Command of Evidence`,
     difficulty: `Hard`,
-    text: `Global Strontium
-Seawater Curve
-87 86
-Sr/ Sr Age (Ma)
-0.708980 6.20
-0.709000 5.86
-0.709020 5.40
-0.709040 4.75
-0.709060 3.00
+    text: `Global Strontium Seawater Curve
+
+⁸⁷Sr/⁸⁶Sr · Age (Ma)
+
+0.708980 · 6.20
+
+0.709000 · 5.86
+
+0.709020 · 5.40
+
+0.709040 · 4.75
+
+0.709060 · 3.00
+
 The late Hemphillian (Hh) North American Land Mammal Age includes the subdivisions Hh3, 6.8 million years ago (Ma) to 6 Ma, and Hh4, 6 Ma
 to 4.75 Ma. While mammalian fossils have indicated that Florida’s Montbrook Fossil Site (MFS) and Palmetto Fauna of the Bone Valley Region
 (PFBV) date to Hh4, a more precise determination of the sites’ ages has proved challenging. Stephanie R. Killingsworth et al. compared average
-ratios of strontium-87 to strontium-86 ( 87 Sr/ 86 Sr) in fossil shark teeth from MFS and PFBV—0.709000 and 0.709028, respectively—to 87 Sr/ 86 Sr
-87 86
-ratios in the global strontium seawater curve, a record that shows how Sr/ Sr ratios in seawater correspond to numerical ages and that is
+ratios of strontium-87 to strontium-86 (⁸⁷Sr/⁸⁶Sr) in fossil shark teeth from MFS and PFBV—0.709000 and 0.709028, respectively—to ⁸⁷Sr/⁸⁶Sr
+ratios in the global strontium seawater curve, a record that shows how ⁸⁷Sr/⁸⁶Sr ratios in seawater correspond to numerical ages and that is
 used to date fossils and, by extension, fossil sites. The researchers concluded that ______
 Which choice most effectively uses data from the table to complete the statement?`,
     type: "multiple_choice",
     choices: [
-      `87 86`,
-      `A. mammalian fossil evidence offers less dating precision than do Sr/ Sr ratios in fossil shark teeth and that PFBV likely was deposited
-closer to the Hh3-Hh4 boundary than was MFS.
-87 86`,
-      `B. the average Sr/ Sr ratios in the fossil shark teeth from MFS and PFBV only partially support the site age estimates previously established
+      `A. mammalian fossil evidence offers less dating precision than do ⁸⁷Sr/⁸⁶Sr ratios in fossil shark teeth and that PFBV likely was deposited
+closer to the Hh3-Hh4 boundary than was MFS.`,
+      `B. the average ⁸⁷Sr/⁸⁶Sr ratios in the fossil shark teeth from MFS and PFBV only partially support the site age estimates previously established
 through mammalian fossil evidence.`,
-      `C. the average 87 Sr/ 86 Sr ratios in the fossil shark teeth from MFS and PFBV resolve previous uncertainty about the sites’ relative ages by
-indicating that both sites were deposited contemporaneously during the late Hh.
-87 86`,
-      `D. the average Sr/ Sr ratios in the fossil shark teeth from MFS and PFBV corroborate that both MFS and PFBV fall within Hh4 but suggest that
+      `C. the average ⁸⁷Sr/⁸⁶Sr ratios in the fossil shark teeth from MFS and PFBV resolve previous uncertainty about the sites’ relative ages by
+indicating that both sites were deposited contemporaneously during the late Hh.`,
+      `D. the average ⁸⁷Sr/⁸⁶Sr ratios in the fossil shark teeth from MFS and PFBV corroborate that both MFS and PFBV fall within Hh4 but suggest that
 PFBV was likely deposited more recently than MFS.`,
     ],
     correctAnswer: `D`,
@@ -4725,14 +4726,10 @@ fragment beginning with “showcasing.”`,
 Which choice completes the text so that it conforms to the conventions of Standard English?`,
     type: "multiple_choice",
     choices: [
-      `2`,
-      `A. 200,000 km Puntland Desert,
-2`,
-      `B. 200,000 km , Puntland Desert
-2`,
-      `C. 200,000 km Puntland Desert
-2`,
-      `D. 200,000 km , Puntland Desert,`,
+      `A. 200,000 km² Puntland Desert,`,
+      `B. 200,000 km², Puntland Desert`,
+      `C. 200,000 km² Puntland Desert`,
+      `D. 200,000 km², Puntland Desert,`,
     ],
     correctAnswer: `C`,
     explanation: `Choice C is the best answer. The convention being tested is the use of punctuation between a modifier and a noun and also between a subject
