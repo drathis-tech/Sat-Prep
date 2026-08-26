@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { questions } from "./questions";
-import { domainGroups } from "./quizUtils";
 import "./Landing.css";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -8,96 +7,6 @@ const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const ACCENT = "#b8d3ee";
 const STAR_DENSITY = 1;
 const METEORS = true;
-
-// The overlay's nine stages. Stage 0 is the hub; stages 1-8 line up with the
-// eight concepts in ConceptOrrery — `slug` is what gets handed to the app so
-// "Start these questions" opens practice already filtered to that domain.
-const STAGES = [
-  {
-    img: "/landing/stage-0.png",
-    mask: "wide",
-    filter: "brightness(1.02) saturate(1.02)",
-    title: "Vega core",
-    blurb: "Every domain orbits one score. Start here.",
-    cta: "Start a full test",
-    entry: { type: "timed" },
-  },
-  {
-    img: "/landing/stage-1.png",
-    mask: "tight",
-    filter: "contrast(1.16) brightness(1.02) saturate(1.04)",
-    left: "-3vh",
-    title: "Information and ideas",
-    blurb: "Central ideas, detail, inference, command of evidence.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "reading" },
-  },
-  {
-    img: "/landing/stage-2.png",
-    mask: "wide",
-    filter: "brightness(1.06) saturate(1.04)",
-    title: "Craft and structure",
-    blurb: "Vocabulary in context, text structure, purpose, cross-text connections.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "vocabulary" },
-  },
-  {
-    img: "/landing/stage-3.png",
-    mask: "tight",
-    filter: "contrast(1.14) brightness(1.24) saturate(1.06)",
-    title: "Standard English conventions",
-    blurb: "Sentence boundaries, agreement, punctuation, verb form.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "grammar" },
-  },
-  {
-    img: "/landing/stage-4.png",
-    mask: "tight",
-    filter: "contrast(1.16) brightness(1.02) saturate(1.04)",
-    title: "Expression of ideas",
-    blurb: "Rhetorical synthesis and transitions.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "rhetoric" },
-  },
-  {
-    img: "/landing/stage-5.png",
-    mask: "wide",
-    filter: "brightness(1.06) saturate(1.04)",
-    title: "Algebra",
-    blurb: "Linear equations, systems, inequalities.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "algebra" },
-  },
-  {
-    img: "/landing/stage-6.png",
-    mask: "wide",
-    filter: "brightness(1.06) saturate(1.04)",
-    title: "Advanced math",
-    blurb: "Quadratics, exponentials, nonlinear systems.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "functions" },
-  },
-  {
-    img: "/landing/stage-7.png",
-    mask: "tight",
-    filter: "contrast(1.18) brightness(1.02) saturate(1.04)",
-    title: "Problem solving and data analysis",
-    blurb: "Ratios, percentages, models, probability, statistics.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "statistics" },
-  },
-  {
-    img: "/landing/stage-8.png",
-    mask: "wide",
-    filter: "brightness(1.06) saturate(1.04)",
-    title: "Geometry and trigonometry",
-    blurb: "Angles, circles, right triangles, area and volume.",
-    cta: "Start these questions",
-    entry: { type: "domain", slug: "geometry" },
-  },
-];
-
-const LAST_STAGE = STAGES.length - 1;
 
 const FAQ = [
   {
@@ -357,200 +266,14 @@ function useReveals(rootRef) {
   }, [rootRef]);
 }
 
-function OrreryOverlay({ onClose, onEnter }) {
-  const [level, setLevel] = useState(0);
-  const levelRef = useRef(0);
-  const accumRef = useRef(0);
-  const lastStepRef = useRef(0);
-
-  // The wheel/key handlers are bound once and read the level through a ref,
-  // so the rate limit isn't reset by a re-render mid-gesture.
-  const step = useCallback((dir, cooldown) => {
-    const now = performance.now();
-    if (now - lastStepRef.current < cooldown) return;
-    const next = Math.min(LAST_STAGE, Math.max(0, levelRef.current + dir));
-    if (next === levelRef.current) return;
-    levelRef.current = next;
-    lastStepRef.current = now;
-    setLevel(next);
-  }, []);
-
-  useEffect(() => {
-    function onWheel(e) {
-      e.preventDefault();
-      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      if (performance.now() - lastStepRef.current < 620) return;
-      accumRef.current += d;
-      if (Math.abs(accumRef.current) < 110) return;
-      const dir = accumRef.current > 0 ? 1 : -1;
-      accumRef.current = 0;
-      step(dir, 620);
-    }
-
-    function onKey(e) {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      const map = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
-      if (!map[e.key]) return;
-      e.preventDefault();
-      step(map[e.key], 320);
-    }
-
-    // Touch devices never fire `wheel`, so a swipe is the only way to
-    // advance there. Tracked on the overlay itself rather than the window so
-    // a tap on a button still behaves normally.
-    let touchX = 0;
-    let touchY = 0;
-    let touching = false;
-
-    function onTouchStart(e) {
-      if (e.touches.length !== 1) return;
-      touching = true;
-      touchX = e.touches[0].clientX;
-      touchY = e.touches[0].clientY;
-    }
-
-    function onTouchEnd(e) {
-      if (!touching) return;
-      touching = false;
-      const t = e.changedTouches[0];
-      const dx = t.clientX - touchX;
-      const dy = t.clientY - touchY;
-      const d = Math.abs(dx) > Math.abs(dy) ? dx : dy;
-      if (Math.abs(d) < 48) return;
-      step(d < 0 ? 1 : -1, 320);
-    }
-
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchend", onTouchEnd, { passive: true });
-    return () => {
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [step, onClose]);
-
-  const goTo = useCallback((i) => {
-    levelRef.current = i;
-    lastStepRef.current = performance.now();
-    setLevel(i);
-  }, []);
-
-  return (
-    <div className="vg-orrery" role="dialog" aria-modal="true" aria-label="Domain orrery">
-      <div className="vg-orrery-bar">
-        <span className="vg-orrery-crumb">Vega / Orrery</span>
-        <button type="button" className="vg-pill" onClick={onClose}>
-          Close
-        </button>
-      </div>
-
-      <div className="vg-orrery-stars" aria-hidden="true"></div>
-
-      <div className="vg-orrery-stagelayer" aria-hidden="true">
-        {STAGES.map((s, i) => {
-          const on = i === level;
-          const past = i < level;
-          return (
-            <div
-              key={s.title}
-              className={`vg-stage vg-stage-mask-${s.mask}`}
-              style={{
-                left: s.left ?? 0,
-                "--stage-filter": s.filter,
-                opacity: on ? 1 : 0,
-                transform: on
-                  ? "translate(0, -50%)"
-                  : `translate(0, calc(-50% ${past ? "-" : "+"} 16vh))`,
-                willChange: on || Math.abs(i - level) === 1 ? "transform, opacity" : "auto",
-              }}
-            >
-              <img src={s.img} alt="" loading={i === 0 ? "eager" : "lazy"} decoding="async" />
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="vg-orrery-panels">
-        {STAGES.map((s, i) => {
-          const on = i === level;
-          return (
-            <div
-              key={s.title}
-              className="vg-panel"
-              aria-hidden={!on}
-              style={{
-                opacity: on ? 1 : 0,
-                transform: `translateY(${on ? "-50%" : i < level ? "-66%" : "-34%"})`,
-                // the copy follows the planet rather than moving with it
-                transitionDelay: on ? "120ms" : "0ms",
-                pointerEvents: on ? "auto" : "none",
-              }}
-            >
-              <span className="vg-panel-index">
-                {String(i).padStart(2, "0")} / {String(LAST_STAGE).padStart(2, "0")}
-              </span>
-              <h3>{s.title}</h3>
-              <p>{s.blurb}</p>
-              <button
-                type="button"
-                className="vg-panel-btn"
-                tabIndex={on ? 0 : -1}
-                onClick={() => onEnter(s.entry)}
-              >
-                <span className="vg-pill-dot"></span>
-                {s.cta}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="vg-ticks">
-        {STAGES.map((s, i) => (
-          <button
-            key={s.title}
-            type="button"
-            className="vg-tick"
-            data-active={i === level ? "" : undefined}
-            aria-current={i === level}
-            onClick={() => goTo(i)}
-          >
-            <span className="vg-tick-dot"></span>
-            <span className="vg-tick-label">{s.title}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="vg-orrery-foot">
-        <span className="vg-orrery-hint">
-          <span className="vg-hint-pointer">Scroll to advance</span>
-          <span className="vg-hint-touch">Swipe to advance</span>
-        </span>
-        <span>
-          {domainGroups.length} domains / {questions.length.toLocaleString()} questions
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function Landing({ onEnter }) {
   const rootRef = useRef(null);
   const canvasRef = useRef(null);
   const planetRef = useRef(null);
   const [openFaq, setOpenFaq] = useState(-1);
-  const [orreryOpen, setOrreryOpen] = useState(false);
 
   useHeroStarfield(canvasRef, planetRef);
   useReveals(rootRef);
-
-  const closeOrrery = useCallback(() => setOrreryOpen(false), []);
 
   return (
     <div className="landing" ref={rootRef}>
@@ -573,7 +296,7 @@ function Landing({ onEnter }) {
               <button type="button" className="vg-nav-link" onClick={() => onEnter(null)}>
                 Practice sets
               </button>
-              <button type="button" className="vg-pill" onClick={() => setOrreryOpen(true)}>
+              <button type="button" className="vg-pill" onClick={() => onEnter(null)}>
                 <span className="vg-pill-dot" aria-hidden="true"></span>
                 Orrery
               </button>
@@ -665,8 +388,6 @@ function Landing({ onEnter }) {
           </button>
         </div>
       </section>
-
-      {orreryOpen && <OrreryOverlay onClose={closeOrrery} onEnter={onEnter} />}
     </div>
   );
 }

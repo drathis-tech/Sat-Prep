@@ -4,14 +4,13 @@ A React + Vite single-page app for practicing SAT questions: one random
 question at a time, multiple-choice or free-response, instant feedback with
 explanations, and a running score.
 
-The app opens on a landing page (`#/`) and the Concept Orrery — the practice
-hub — lives at `#/app`.
+The app opens on a landing page (`#/`); the practice hub lives at `#/app`.
 
 ## Features
 
-- Landing page with a parallax star field, an FAQ, and a full-screen "orrery"
-  tour of the eight SAT domains that deep-links straight into practice
-
+- Landing page with a parallax star field, an FAQ, and calls to action
+- An orrery hub: nine full-screen planet stages — one per SAT domain, plus
+  the timed test — each starting practice already filtered to that domain
 - Random question order each session (re-shuffles when you complete the set)
 - Multiple choice (A/B/C/D) and free-response question types
 - Answer checking with correct/incorrect highlighting
@@ -82,13 +81,13 @@ vercel --prod # production deployment
 ```
 src/
   questions.js      # question bank (edit this to add more questions)
-  App.jsx           # hash routing between the landing page and the app
-  Landing.jsx/.css  # landing page, incl. the domain orrery overlay
-  ConceptOrrery.jsx # practice hub: concepts, practice mode, timed test
-  App.css           # component styles
+  App.jsx           # hash routing, plus the app shell's screen state
+  Landing.jsx/.css  # landing page: hero, FAQ, calls to action
+  Orrery.jsx/.css   # the app's hub — nine planet stages, one per domain
+  App.css           # app shell chrome and component styles
   main.jsx          # React entry point
 public/
-  landing/          # hero and orrery planet art for the landing page
+  landing/          # hero and orrery planet art
 scripts/
   newQuestionTemplate.mjs   # prints blank question templates
   validateQuestions.mjs     # validates questions.js
@@ -96,26 +95,34 @@ CONVERTING_QUESTIONS.md     # guide for converting a PDF into questions.js
 vercel.json                 # Vercel build configuration
 ```
 
-## The landing page
+## Screens
 
-`src/Landing.jsx` renders the marketing surface at `#/`. Its calls to action
-hand an *entry intent* to `ConceptOrrery`, which resolves it on mount:
+`#/` is the landing page (`src/Landing.jsx`) — hero, FAQ, calls to action.
+`#/app` is the app shell (`src/App.jsx`), which has three screens:
+
+- **the orrery** (`src/Orrery.jsx`), the hub: nine full-screen planet stages,
+  advanced by wheel, arrow keys, swipe, or the tick rail
+- **practice**, a filtered run of questions
+- **the timed test**, a full digital-SAT simulation
+
+Stage 0 of the orrery launches the timed test; stages 1-8 are the eight SAT
+domains, and each carries the exact `subject`/`domain` pair from the question
+bank, so "Start these questions" opens practice already filtered to it. Adding
+a domain means adding a stage to `STAGES` in `Orrery.jsx` and its planet art.
+
+A landing CTA hands an *entry intent* to the shell, which resolves it on mount:
 
 | Landing control | Entry intent | Opens |
 | --- | --- | --- |
-| Start practicing / Practice sets | `null` | the orrery menu |
-| Browse the question bank | `{ type: "browse" }` | the menu with Browse open |
-| Orrery → "Start a full test" | `{ type: "timed" }` | the timed test |
-| Orrery → "Start these questions" | `{ type: "domain", slug }` | practice filtered to that domain |
-
-The eight orrery stages map onto the eight concepts in `ConceptOrrery` by
-slug, so adding or renaming a concept means updating `STAGES` in
-`Landing.jsx` to match.
+| Start practicing / Practice sets / Orrery | `null` | the orrery |
+| Browse the question bank | `{ type: "browse" }` | the orrery with Browse open |
+| (orrery stage 0) | `{ type: "timed" }` | the timed test |
+| (orrery stages 1-8) | `{ type: "domain", subject, domain }` | filtered practice |
 
 Counts shown on the page ("270 questions", "8 domains") are read from the
 question bank at render time rather than hard-coded, so they stay honest as
 questions are added.
 
 Planet art lives in `public/landing/`. The nine orrery images (~16 MB total)
-are only requested when the overlay is opened, so they stay off the initial
-page load.
+are only requested once the orrery is opened, so they stay off the landing
+page's initial load.
