@@ -1,9 +1,11 @@
 import { useMemo, useRef, useState } from "react";
-import { isAnswerCorrect, parseChoice, shuffle } from "./quizUtils";
+import { parseChoice } from "./quizUtils";
 import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 import ReferenceSheet from "./ReferenceSheet";
 import { useScreenFade } from "./useScreenFade";
+import { orderForStudent, submitAnswer } from "./student";
+import ScoreReadout from "./ScoreReadout";
 import "./Practice.css";
 
 // A set is capped so it ends somewhere and can be scored; the results screen
@@ -64,6 +66,11 @@ function Results({ log, domainLabel, onRetry, onExit }) {
           </div>
         </div>
 
+        <div className="cm-results-score">
+          <span className="pr-results-eyebrow">Your lifetime score</span>
+          <ScoreReadout />
+        </div>
+
         <div className="pr-results-actions">
           <button type="button" className="pr-btn-primary" onClick={onRetry}>
             Run the set again
@@ -80,11 +87,13 @@ function Results({ log, domainLabel, onRetry, onExit }) {
 function PracticeMode({ questionPool, title, onExit }) {
   const triggerFade = useScreenFade();
   const [setId, setSetId] = useState(0);
-  const [order, setOrder] = useState(() => shuffle(questionPool).slice(0, SET_SIZE));
+  const [order, setOrder] = useState(() => orderForStudent(questionPool).slice(0, SET_SIZE));
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState(null);
   const [freeResponse, setFreeResponse] = useState("");
   const [answered, setAnswered] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState(null);
   const [log, setLog] = useState([]);
   const [done, setDone] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
@@ -107,11 +116,31 @@ function PracticeMode({ questionPool, title, onExit }) {
   const lastEntry = log.length ? log[log.length - 1] : null;
   const wasCorrect = answered && lastEntry ? lastEntry.correct : false;
 
-  function checkAnswer() {
-    if (answered || !given) return;
-    const correct = isAnswerCorrect(current, given);
-    setAnswered(true);
-    setLog((entries) => [...entries, { question: current, given, correct }]);
+  // The server checks the answer and returns the verdict along with the
+  // key and explanation — none of which the browser has until now.
+  async function checkAnswer() {
+    if (answered || checking || !given) return;
+    setChecking(true);
+    setError(null);
+    try {
+      const result = await submitAnswer(current, given);
+      setLog((entries) => [
+        ...entries,
+        {
+          question: current,
+          given,
+          correct: result.correct,
+          correctAnswer: result.correctAnswer,
+          explanation: result.explanation,
+          counted: result.counted,
+        },
+      ]);
+      setAnswered(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChecking(false);
+    }
   }
 
   function nextQuestion() {
@@ -133,8 +162,9 @@ function PracticeMode({ questionPool, title, onExit }) {
 
   function retry() {
     triggerFade("full", () => {
-      setOrder(shuffle(questionPool).slice(0, SET_SIZE));
+      setOrder(orderForStudent(questionPool).slice(0, SET_SIZE));
       setSetId((n) => n + 1);
+      setError(null);
       setIndex(0);
       setSelected(null);
       setFreeResponse("");
@@ -174,7 +204,8 @@ function PracticeMode({ questionPool, title, onExit }) {
           <span className="pr-crumb-skill">{current.skill}</span>
         </div>
         <div className="pr-head-right">
-          <span className="pr-score">
+          <ScoreReadout />
+          <span className="pr-score" title="This set">
             {rightSoFar} / {log.length}
           </span>
           <button type="button" className="pr-pill" onClick={onExit}>
@@ -213,7 +244,7 @@ function PracticeMode({ questionPool, title, onExit }) {
               <div className="pr-choices">
                 {current.choices.map((choice, ci) => {
                   const { letter, body } = parseChoice(choice, ci);
-                  const isKey = letter === current.correctAnswer;
+                  const isKey = answered && letter === lastEntry.correctAnswer;
                   const picked = selected === letter;
                   let state = "idle";
                   if (answered && isKey) state = "key";
@@ -225,7 +256,7 @@ function PracticeMode({ questionPool, title, onExit }) {
                       key={letter}
                       className="pr-choice"
                       data-state={state}
-                      disabled={answered}
+                      disabled={answered || checking}
                       aria-pressed={picked}
                       onClick={() => setSelected(letter)}
                     >
@@ -244,7 +275,7 @@ function PracticeMode({ questionPool, title, onExit }) {
                   onKeyDown={(e) => {
                     if (e.key === "Enter") checkAnswer();
                   }}
-                  disabled={answered}
+                  disabled={answered || checking}
                   placeholder="Type your answer"
                   aria-label="Your answer"
                 />
@@ -263,10 +294,16 @@ function PracticeMode({ questionPool, title, onExit }) {
               <div className="pr-verdict-row">
                 <span className="pr-verdict">{wasCorrect ? "Correct" : "Not quite"}</span>
                 <span className="pr-keyline">
-                  {wasCorrect ? "You got it." : `Correct answer: ${current.correctAnswer}`}
+                  {wasCorrect ? "You got it." : `Correct answer: ${answered ? lastEntry.correctAnswer : ""}`}
                 </span>
               </div>
-              <p className="pr-explain">{renderMath(current.explanation)}</p>
+              {answered && !lastEntry.counted && (
+                <p className="cm-practice-only">
+                  Practice only — you answered this one recently, so it didn&apos;t change your
+                  score.
+                </p>
+              )}
+              <p className="pr-explain">{answered ? renderMath(lastEntry.explanation) : null}</p>
             </div>
           </div>
         </div>
@@ -297,13 +334,23 @@ function PracticeMode({ questionPool, title, onExit }) {
         </div>
 
         <div className="pr-foot-group">
+          {error && (
+            <span className="cm-error" role="alert">
+              {error}
+            </span>
+          )}
           {answered ? (
             <button type="button" className="pr-btn-primary" onClick={nextQuestion}>
               {index + 1 >= order.length ? "See results" : "Next question"}
             </button>
           ) : (
-            <button type="button" className="pr-btn-primary" onClick={checkAnswer} disabled={!given}>
-              Check answer
+            <button
+              type="button"
+              className="pr-btn-primary"
+              onClick={checkAnswer}
+              disabled={!given || checking}
+            >
+              {checking ? "Checking…" : "Check answer"}
             </button>
           )}
         </div>

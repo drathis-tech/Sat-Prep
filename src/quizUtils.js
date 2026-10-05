@@ -1,4 +1,4 @@
-import { questions } from "./questions";
+import { questions } from "./questionBank";
 
 export function shuffle(array) {
   const copy = [...array];
@@ -7,18 +7,6 @@ export function shuffle(array) {
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
-}
-
-export function normalizeAnswer(str) {
-  return String(str).trim().toLowerCase().replace(/\s+/g, " ");
-}
-
-export function isAnswerCorrect(question, given) {
-  if (!given) return false;
-  if (question.type === "multiple_choice") {
-    return given === question.correctAnswer;
-  }
-  return normalizeAnswer(given) === normalizeAnswer(question.correctAnswer);
 }
 
 export function getSubjectPool(subject) {

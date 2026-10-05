@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { getSubjectPool, isAnswerCorrect, parseChoice, shuffle } from "./quizUtils";
+import { getSubjectPool, parseChoice, shuffle } from "./quizUtils";
 import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 import { useScreenFade } from "./useScreenFade";
 import ReferenceSheet from "./ReferenceSheet";
+import { submitAnswer } from "./student";
+import ScoreReadout from "./ScoreReadout";
 import "./Practice.css";
 import "./TimedTest.css";
 
@@ -162,14 +164,26 @@ function TimedTest({ onExit }) {
   function recordCurrentAnswer() {
     const q = moduleData[stage.id][questionIndex];
     const given = q.type === "multiple_choice" ? selected : freeResponse.trim() || null;
-    setModuleAnswers((prev) => {
-      const updated = { ...prev, [stage.id]: [...prev[stage.id]] };
-      updated[stage.id][questionIndex] = {
-        answer: given,
-        correct: given ? isAnswerCorrect(q, given) : false,
-      };
-      return updated;
-    });
+    const moduleId = stage.id;
+    const slot = questionIndex;
+
+    function store(entry) {
+      setModuleAnswers((prev) => {
+        if (!prev) return prev;
+        const updated = { ...prev, [moduleId]: [...prev[moduleId]] };
+        updated[moduleId][slot] = entry;
+        return updated;
+      });
+    }
+
+    // Blanks count against the test result but aren't sent to the server.
+    // Answers are checked there in the background, so the test never waits
+    // on the network; the debrief fills in as the verdicts arrive.
+    store({ answer: given, correct: false, pending: Boolean(given) });
+    if (!given) return;
+    submitAnswer(q, given)
+      .then((result) => store({ answer: given, correct: result.correct }))
+      .catch(() => store({ answer: given, correct: false, failed: true }));
   }
 
   function handleSelectChoice(letter) {
@@ -221,7 +235,8 @@ function TimedTest({ onExit }) {
             <p className="tt-lede">
               The real digital SAT&apos;s structure and timing: two Reading &amp; Writing modules,
               a break, then two Math modules. Once you move on from a question you can&apos;t go
-              back to it. You can pause at any time to step away without losing time.
+              back to it. You can pause at any time to step away without losing time. Every
+              answer you submit counts toward your Mission Control score.
             </p>
             <ul className="tt-modules">
               {MODULES.map((m) => (
@@ -253,6 +268,9 @@ function TimedTest({ onExit }) {
     const overallTotal = moduleResults.reduce((sum, m) => sum + m.total, 0);
     const totalSeconds = moduleResults.reduce((sum, m) => sum + (elapsedByModule[m.id] || 0), 0);
     const pct = overallTotal ? Math.round((overallCorrect / overallTotal) * 100) : 0;
+    const allAnswers = QUESTION_MODULES.flatMap((m) => moduleAnswers[m.id] || []);
+    const pendingCount = allAnswers.filter((a) => a && a.pending).length;
+    const failedCount = allAnswers.filter((a) => a && a.failed).length;
 
     return (
       <Shell crumb="Debrief" onExit={onExit}>
@@ -264,6 +282,18 @@ function TimedTest({ onExit }) {
                 {overallCorrect} of {overallTotal} correct
               </span>
             </div>
+
+            {pendingCount > 0 && (
+              <p className="cm-practice-only">
+                Checking your last {pendingCount === 1 ? "answer" : `${pendingCount} answers`}…
+              </p>
+            )}
+            {failedCount > 0 && (
+              <p className="cm-error" role="alert">
+                {failedCount} answer{failedCount === 1 ? "" : "s"} couldn&apos;t reach the server,
+                so {failedCount === 1 ? "it isn't" : "they aren't"} included here or in your score.
+              </p>
+            )}
 
             <div className="tt-rows">
               {moduleResults.map((m, i) => (
@@ -307,6 +337,11 @@ function TimedTest({ onExit }) {
                   / {overallTotal}
                 </span>
               </div>
+            </div>
+
+            <div className="cm-results-score">
+              <span className="pr-results-eyebrow">Your lifetime score</span>
+              <ScoreReadout />
             </div>
 
             <div className="tt-actions">

@@ -1,0 +1,433 @@
+/* Competition mode — sign-in, the live score readout, and the Mission
+   Control leaderboard. Same palette and type as the practice screens
+   (Practice.css), whose pills, labels and buttons these reuse. */
+
+/* ---------- live score readout ---------- */
+
+.cm-score {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  white-space: nowrap;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b9cb0;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-score-label {
+  color: #6f8399;
+}
+
+.cm-score-value {
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: #f3f7fc;
+}
+
+.cm-score-gate {
+  color: #e0a8a8;
+}
+
+/* In the orrery bar the pills beside it are 34px tall. */
+.vg-orrery-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.vg-orrery-actions .cm-score {
+  margin-right: 8px;
+  text-shadow:
+    0 1px 10px rgba(2, 4, 8, 0.95),
+    0 0 26px rgba(2, 4, 8, 0.85);
+}
+
+.cm-panel-stat {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a8d2f4;
+}
+
+.cm-results-score {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cm-results-score .cm-score {
+  font-size: 12px;
+}
+
+.cm-results-score .cm-score-value {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 40px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.cm-practice-only {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #8b9cb0;
+}
+
+.cm-error {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #e0a8a8;
+}
+
+/* ---------- sign-in ---------- */
+
+.cm-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: #000;
+  font-family: "Geist", system-ui, sans-serif;
+  color: #e8eef6;
+  animation: pr-fade 200ms ease both;
+}
+
+.cm-screen :focus-visible,
+.cm-mission :focus-visible {
+  outline: 2px solid #9db0c6;
+  outline-offset: 3px;
+}
+
+.cm-loading {
+  margin: auto;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6f8399;
+}
+
+.cm-login-pane {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px clamp(20px, 4vw, 48px) 72px;
+}
+
+.cm-login {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.cm-login-title {
+  margin: 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+}
+
+.cm-login-lede,
+.cm-hint {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #93a5ba;
+  text-wrap: pretty;
+}
+
+.cm-hint {
+  font-size: 13px;
+  color: #6f8399;
+}
+
+.cm-tabs {
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #272727;
+  border-radius: 999px;
+}
+
+.cm-tab {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #98a6b6;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.cm-tab:hover {
+  color: #fff;
+}
+
+.cm-tab[aria-selected="true"] {
+  background: #eef4fb;
+  color: #0a1018;
+}
+
+.cm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cm-field input {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 12px;
+  border: 1px solid #272727;
+  background: #141414;
+  color: #f2f5f9;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 17px;
+  outline: none;
+  transition: border-color 160ms ease;
+}
+
+.cm-field input:focus {
+  border-color: rgba(168, 210, 244, 0.55);
+}
+
+.cm-field input.cm-pin {
+  max-width: 150px;
+  letter-spacing: 0.4em;
+}
+
+.cm-submit {
+  align-self: flex-start;
+}
+
+/* ---------- Mission Control ---------- */
+
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  animation: pr-fade 200ms ease both;
+}
+
+.cm-mission {
+  width: 100%;
+  max-width: 720px;
+  max-height: min(84vh, 760px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #272727;
+  border-radius: 18px;
+  background: #0a0a0a;
+  font-family: "Geist", system-ui, sans-serif;
+  color: #e8eef6;
+  overflow: hidden;
+  animation: pr-pop 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.cm-mission-head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 28px 0;
+}
+
+.cm-mission-title {
+  margin: 10px 0 0;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-weight: 400;
+  font-size: 38px;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: #f3f7fc;
+}
+
+.cm-mission-sub {
+  flex: none;
+  margin: 0;
+  padding: 12px 28px 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #6f8399;
+}
+
+.cm-mission-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px;
+  border-top: 1px solid #191919;
+}
+
+.cm-mission-empty {
+  margin: 0;
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #6f8399;
+}
+
+.cm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-table th {
+  position: sticky;
+  top: 0;
+  padding: 14px 12px 10px;
+  background: #0a0a0a;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-align: left;
+  color: #6f8399;
+}
+
+.cm-table td {
+  padding: 13px 12px;
+  border-top: 1px solid #191919;
+  font-size: 14.5px;
+  color: #98a6b6;
+  white-space: nowrap;
+}
+
+.cm-table .num {
+  text-align: right;
+}
+
+.cm-table .cm-rank {
+  width: 56px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: #55657a;
+}
+
+.cm-table .cm-name {
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #e8eef6;
+}
+
+.cm-table .cm-table-score {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 15px;
+  color: #f3f7fc;
+}
+
+/* The current student's row. */
+.cm-table tr[data-you] td {
+  background: rgba(168, 210, 244, 0.09);
+  color: #cfe3f8;
+}
+
+.cm-table tr[data-you] td:first-child {
+  border-radius: 10px 0 0 10px;
+  box-shadow: inset 2px 0 0 #a8d2f4;
+  color: #a8d2f4;
+}
+
+.cm-table tr[data-you] td:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.cm-you {
+  margin-left: 10px;
+  padding: 3px 8px;
+  border: 1px solid rgba(168, 210, 244, 0.5);
+  border-radius: 999px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #cfe3f8;
+  vertical-align: middle;
+}
+
+.cm-mission-foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 28px;
+  border-top: 1px solid #191919;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f8399;
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 640px) {
+  /* The header keeps the score; accuracy and count live in Mission Control. */
+  .pr-head .cm-score-detail,
+  .pr-head .cm-score-gate,
+  .vg-orrery-actions .cm-score-detail {
+    display: none;
+  }
+
+  .cm-mission-head,
+  .cm-mission-sub,
+  .cm-mission-foot {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .cm-mission-scroll {
+    padding: 0 6px;
+  }
+
+  .cm-table th,
+  .cm-table td {
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 13px;
+  }
+
+  .cm-table .cm-rank {
+    width: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-screen,
+  .cm-overlay,
+  .cm-mission {
+    animation: none;
+  }
+}

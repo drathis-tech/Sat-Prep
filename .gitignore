@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local dev database (npm run dev)
+.local-db
+.env
+.vercel

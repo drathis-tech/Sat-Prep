@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { questions } from "./questions";
+import { questions } from "./questionBank";
 import { domainGroups } from "./quizUtils";
+import { computeScore, formatAccuracy } from "../shared/scoring";
+import { useStudent } from "./student";
+import ScoreReadout from "./ScoreReadout";
 import "./Orrery.css";
 
 const STAGES = [
@@ -92,7 +95,24 @@ const LAST_STAGE = STAGES.length - 1;
 
 export { STAGES };
 
-function Orrery({ onClose, onEnter, onBrowse }) {
+// What the signed-in student has done on a stage: their overall score on the
+// core, their record in that domain on a planet.
+function stageStat(entry, totals, domains) {
+  if (entry.type === "timed") {
+    return totals.answered > 0
+      ? `Your score ${computeScore(totals)} · ${formatAccuracy(totals)} accuracy`
+      : "No answers yet — your score starts here";
+  }
+  const record = domains[entry.domain];
+  if (!record || record.attempted === 0) return "Not started yet";
+  return `${record.attempted} answered · ${formatAccuracy({
+    answered: record.attempted,
+    correct: record.correct,
+  })} correct`;
+}
+
+function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
+  const { totals, domains } = useStudent();
   const [level, setLevel] = useState(0);
   const levelRef = useRef(0);
   const accumRef = useRef(0);
@@ -110,7 +130,11 @@ function Orrery({ onClose, onEnter, onBrowse }) {
     setLevel(next);
   }, []);
 
+  // While Browse or Mission Control is open over the orrery, the wheel and
+  // keys belong to that panel.
   useEffect(() => {
+    if (paused) return undefined;
+
     function onWheel(e) {
       e.preventDefault();
       const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -168,7 +192,7 @@ function Orrery({ onClose, onEnter, onBrowse }) {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [step, onClose]);
+  }, [step, onClose, paused]);
 
   const goTo = useCallback((i) => {
     levelRef.current = i;
@@ -181,6 +205,21 @@ function Orrery({ onClose, onEnter, onBrowse }) {
       <div className="vg-orrery-bar">
         <span className="vg-orrery-crumb">Vega / Orrery</span>
         <div className="vg-orrery-actions">
+          <ScoreReadout />
+          {onMission && (
+            <button type="button" className="vg-pill" onClick={onMission}>
+              <svg viewBox="0 0 20 20" aria-hidden="true" className="vg-pill-icon">
+                <path
+                  d="M3 17v-6M8 17V4M13 17V8M18 17v-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Mission Control
+            </button>
+          )}
           {onBrowse && (
             <button type="button" className="vg-pill" onClick={onBrowse}>
               <svg viewBox="0 0 20 20" aria-hidden="true" className="vg-pill-icon">
@@ -248,6 +287,7 @@ function Orrery({ onClose, onEnter, onBrowse }) {
               </span>
               <h3>{s.title}</h3>
               <p>{s.blurb}</p>
+              <span className="cm-panel-stat">{stageStat(s.entry, totals, domains)}</span>
               <button
                 type="button"
                 className="vg-panel-btn"
