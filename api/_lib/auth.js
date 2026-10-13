@@ -30,34 +30,38 @@ export function verifyPin(pin, stored) {
   return timingSafeEqual(actual, expected);
 }
 
-export function hashToken(token) {
+function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function cookieHeader(name, value, maxAge) {
+function cookieHeader(value, maxAge) {
   const secure = process.env.VERCEL ? "; Secure" : "";
-  return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+  return `${COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
 }
 
 export async function startSession(res, studentId) {
   const token = randomBytes(32).toString("base64url");
   await query("INSERT INTO sessions (token_hash, student_id) VALUES ($1, $2)", [hashToken(token), studentId]);
-  res.setHeader("Set-Cookie", cookieHeader(COOKIE, token, MAX_AGE_SECONDS));
+  res.setHeader("Set-Cookie", cookieHeader(token, MAX_AGE_SECONDS));
 }
 
 export async function endSession(req, res) {
   const token = readCookie(req, COOKIE);
   if (token) await query("DELETE FROM sessions WHERE token_hash = $1", [hashToken(token)]);
-  res.setHeader("Set-Cookie", cookieHeader(COOKIE, "", 0));
+  res.setHeader("Set-Cookie", cookieHeader("", 0));
+}
+
+// Resolves to the signed-in student's id, or null.
+export async function currentStudentId(req) {
+  const token = readCookie(req, COOKIE);
+  if (!token) return null;
+  const rows = await query("SELECT student_id FROM sessions WHERE token_hash = $1", [hashToken(token)]);
+  return rows.length ? rows[0].student_id : null;
 }
 
 // Resolves to the signed-in student's id, or sends a 401 and resolves to null.
 export async function requireStudent(req, res) {
-  const token = readCookie(req, COOKIE);
-  if (token) {
-    const rows = await query("SELECT student_id FROM sessions WHERE token_hash = $1", [hashToken(token)]);
-    if (rows.length) return rows[0].student_id;
-  }
-  sendError(res, 401, "Not signed in");
-  return null;
+  const studentId = await currentStudentId(req);
+  if (!studentId) sendError(res, 401, "Not signed in");
+  return studentId;
 }

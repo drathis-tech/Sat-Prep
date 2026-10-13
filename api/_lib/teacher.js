@@ -1,10 +1,24 @@
-import { randomBytes } from "node:crypto";
 import { query } from "./db.js";
-import { cookieHeader, hashToken } from "./auth.js";
-import { readCookie } from "./http.js";
+import { currentStudentId } from "./auth.js";
 
-const COOKIE = "sat_teacher";
-const MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+// The teacher tools belong to one account: the site owner's own student
+// nickname. There is no separate teacher role or password — whoever is
+// signed in as this nickname has the tools. Nicknames are unique, so no one
+// else can register it. Set OWNER_NICKNAME to use a different account.
+const OWNER_NICKNAME = (process.env.OWNER_NICKNAME || "pietro").trim().toLowerCase();
+
+export function isOwnerNickname(nickname) {
+  return String(nickname ?? "").trim().toLowerCase() === OWNER_NICKNAME;
+}
+
+// Resolves to the owner's student id when the request comes from the owner
+// account, otherwise null.
+export async function ownerStudentId(req) {
+  const studentId = await currentStudentId(req);
+  if (!studentId) return null;
+  const rows = await query("SELECT nickname FROM students WHERE id = $1", [studentId]);
+  return rows.length && isOwnerNickname(rows[0].nickname) ? studentId : null;
+}
 
 export async function getSetting(key) {
   const rows = await query("SELECT value FROM settings WHERE key = $1", [key]);
@@ -27,23 +41,4 @@ export async function deleteSetting(key) {
 export function classCodeMatches(given, expected) {
   const norm = (value) => String(value ?? "").trim().toLowerCase();
   return norm(given) !== "" && norm(given) === norm(expected);
-}
-
-export async function startTeacherSession(res) {
-  const token = randomBytes(32).toString("base64url");
-  await query("INSERT INTO teacher_sessions (token_hash) VALUES ($1)", [hashToken(token)]);
-  res.setHeader("Set-Cookie", cookieHeader(COOKIE, token, MAX_AGE_SECONDS));
-}
-
-export async function endTeacherSession(req, res) {
-  const token = readCookie(req, COOKIE);
-  if (token) await query("DELETE FROM teacher_sessions WHERE token_hash = $1", [hashToken(token)]);
-  res.setHeader("Set-Cookie", cookieHeader(COOKIE, "", 0));
-}
-
-export async function isTeacher(req) {
-  const token = readCookie(req, COOKIE);
-  if (!token) return false;
-  const rows = await query("SELECT 1 FROM teacher_sessions WHERE token_hash = $1", [hashToken(token)]);
-  return rows.length > 0;
 }

@@ -1,4 +1,5 @@
 import { query } from "./db.js";
+import { isOwnerNickname } from "./teacher.js";
 
 // Everything the browser needs to draw a student's hub: lifetime totals for
 // the score, per-domain totals for the planet rings, and how many times each
@@ -30,6 +31,7 @@ export async function getStudentState(studentId) {
 
   return {
     student: { id: student.id, nickname: student.nickname },
+    isOwner: isOwnerNickname(student.nickname),
     totals: { answered: student.answered, correct: student.correct },
     domains,
     seen,

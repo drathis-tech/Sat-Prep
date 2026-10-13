@@ -6,7 +6,7 @@ import "./Competition.css";
 const REFRESH_MS = 15000;
 
 function MissionControl({ onClose }) {
-  const { student, totals } = useStudent();
+  const { student, totals, isOwner } = useStudent();
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
@@ -104,9 +104,16 @@ function MissionControl({ onClose }) {
 
         <div className="cm-mission-foot">
           <span>Signed in as {student.nickname}</span>
-          <button type="button" className="pr-pill" onClick={handleLogout}>
-            Log out
-          </button>
+          <span className="cm-mission-foot-actions">
+            {isOwner && (
+              <a className="pr-pill" href="#/teacher">
+                Teacher tools
+              </a>
+            )}
+            <button type="button" className="pr-pill" onClick={handleLogout}>
+              Log out
+            </button>
+          </span>
         </div>
       </div>
     </div>

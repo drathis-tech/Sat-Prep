@@ -24,77 +24,6 @@ function formatDay(value) {
   return new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-// First visit: choose the teacher password. After that: enter it.
-function TeacherGate({ configured, onSubmit }) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(null);
-
-  const ready = configured ? password.length > 0 : password.length >= 8 && password === confirm;
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!ready || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await onSubmit({ action: configured ? "login" : "setup", password });
-    } catch (err) {
-      setError(err.message);
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div className="cm-login-pane">
-      <form className="cm-login" onSubmit={handleSubmit}>
-        <h1 className="cm-login-title">{configured ? "Teacher sign-in" : "Set up teacher access"}</h1>
-        <p className="cm-login-lede">
-          {configured
-            ? "Enter the teacher password to manage students and the class code."
-            : "Choose a teacher password. It lets you reset PINs, rename or remove students, and set a class code. This can only be done once."}
-        </p>
-
-        <label className="cm-field">
-          <span className="pr-label">{configured ? "Password" : "New password (8+ characters)"}</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            maxLength={72}
-            autoComplete={configured ? "current-password" : "new-password"}
-            autoFocus
-          />
-        </label>
-
-        {!configured && (
-          <label className="cm-field">
-            <span className="pr-label">Repeat password</span>
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              maxLength={72}
-              autoComplete="new-password"
-            />
-          </label>
-        )}
-
-        {error && (
-          <p className="cm-error" role="alert">
-            {error}
-          </p>
-        )}
-
-        <button type="submit" className="pr-btn-primary cm-submit" disabled={!ready || busy}>
-          {busy ? "Checking…" : configured ? "Log in" : "Save password"}
-        </button>
-      </form>
-    </div>
-  );
-}
-
 function ClassCode({ value, onSave }) {
   const [code, setCode] = useState(value);
   const [busy, setBusy] = useState(false);
@@ -177,7 +106,10 @@ function StudentRow({ student, onAction }) {
 
   return (
     <tr>
-      <td className="cm-name">{student.nickname}</td>
+      <td className="cm-name">
+        {student.nickname}
+        {student.isYou && <span className="cm-you">You</span>}
+      </td>
       <td className="num cm-table-score">{student.score}</td>
       <td className="num">{student.answered > 0 ? `${Math.round(student.accuracy * 100)}%` : "—"}</td>
       <td className="num">{student.answered}</td>
@@ -212,12 +144,16 @@ function StudentRow({ student, onAction }) {
             <button type="button" className="pr-pill" onClick={() => open("pin")}>
               Reset PIN
             </button>
-            <button type="button" className="pr-pill" onClick={() => open("rename")}>
-              Rename
-            </button>
-            <button type="button" className="pr-pill cm-pill-danger" onClick={remove}>
-              Remove
-            </button>
+            {!student.isYou && (
+              <>
+                <button type="button" className="pr-pill" onClick={() => open("rename")}>
+                  Rename
+                </button>
+                <button type="button" className="pr-pill cm-pill-danger" onClick={remove}>
+                  Remove
+                </button>
+              </>
+            )}
           </>
         )}
       </td>
@@ -256,10 +192,6 @@ function Teacher({ onBack }) {
     }
   }
 
-  async function gate(body) {
-    setState(await teacherRequest(body));
-  }
-
   return (
     <div className="cm-screen">
       <div className="pr-head">
@@ -267,11 +199,6 @@ function Teacher({ onBack }) {
           <span className="pr-crumb-app">Vega / Teacher</span>
         </div>
         <div className="pr-head-right">
-          {state?.signedIn && (
-            <button type="button" className="pr-pill" onClick={() => act({ action: "logout" })}>
-              Log out
-            </button>
-          )}
           <button type="button" className="pr-pill" onClick={onBack}>
             Back
           </button>
@@ -280,11 +207,11 @@ function Teacher({ onBack }) {
 
       {!state ? (
         <p className="cm-loading">{error || "Contacting Mission Control…"}</p>
-      ) : !state.signedIn ? (
-        <TeacherGate configured={state.configured} onSubmit={gate} />
+      ) : !state.isOwner ? (
+        <p className="cm-loading">These tools aren&apos;t available on this account.</p>
       ) : (
         <div className="cm-teacher">
-          <h1 className="cm-login-title">Teacher console</h1>
+          <h1 className="cm-login-title">Teacher tools</h1>
 
           {error && (
             <p className="cm-error" role="alert">

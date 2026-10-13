@@ -7,6 +7,7 @@ import { shuffle } from "./quizUtils";
 let state = {
   status: "loading", // loading | signedOut | signedIn
   student: null,
+  isOwner: false,
   totals: { answered: 0, correct: 0 },
   domains: {},
   seen: {},
@@ -52,6 +53,7 @@ function signOutLocally() {
   setState({
     status: "signedOut",
     student: null,
+    isOwner: false,
     totals: { answered: 0, correct: 0 },
     domains: {},
     seen: {},

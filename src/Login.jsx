@@ -54,9 +54,6 @@ function Login({ onBack }) {
           <span className="pr-crumb-app">Vega / Sign in</span>
         </div>
         <div className="pr-head-right">
-          <a className="pr-pill" href="#/teacher">
-            Teacher
-          </a>
           <button type="button" className="pr-pill" onClick={onBack}>
             Back
           </button>

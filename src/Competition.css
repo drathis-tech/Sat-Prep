@@ -507,3 +507,8 @@ a.pr-pill {
   border-color: rgba(224, 168, 168, 0.6);
   color: #e0a8a8;
 }
+
+.cm-mission-foot-actions {
+  display: flex;
+  gap: 10px;
+}

@@ -75,23 +75,22 @@ Postgres tables, created automatically on first request
 - `answers` — every submitted answer (student, question, domain, given
   answer, right/wrong, whether it counted)
 - `sessions` — sign-in sessions
-- `settings`, `teacher_sessions` — class code, teacher password hash and
-  teacher sign-ins
+- `settings` — the class code
 
-### Teacher console
+### Teacher tools
 
-`#/teacher` (also linked from the sign-in screen) is the teacher page. The
-first visit asks you to choose a teacher password; this can only be done
-once, so do it before sharing the site. From there you can:
+There is no separate teacher role or password. The tools belong to one
+student account — the nickname `pietro` (change it with an `OWNER_NICKNAME`
+environment variable). When signed in as that account, Mission Control shows
+a **Teacher tools** button leading to `#/teacher`, where you can:
 
 - set or remove a **class code** that new students must type to create an
   account (existing students are unaffected)
 - **reset a student's PIN** (this also signs them out everywhere)
 - **rename** or **remove** a student (removing deletes their answers too)
 
-If the teacher password is lost, delete the `teacher_password` row from the
-`settings` table in your database provider's SQL console and set a new one
-at `#/teacher`.
+Everyone else is refused by the server. The owner account itself cannot be
+renamed or removed from the tools.
 
 ## Adding your own questions
 
@@ -164,7 +163,7 @@ src/
   student.js        # signed-in student + live stats store
   Login.jsx         # nickname + PIN sign-in
   MissionControl.jsx  # leaderboard
-  Teacher.jsx       # teacher console (class code, PIN resets)
+  Teacher.jsx       # teacher tools (class code, PIN resets)
   ScoreReadout.jsx  # live lifetime score
   App.jsx           # hash routing, plus the app shell's screen state
   Landing.jsx/.css  # landing page: hero, FAQ, calls to action
