@@ -205,9 +205,10 @@ A landing CTA hands an *entry intent* to the shell, which resolves it on mount:
 | (orrery stage 0) | `{ type: "timed" }` | the timed test |
 | (orrery stages 1-8) | `{ type: "domain", subject, domain }` | filtered practice |
 
-Counts shown on the page ("270 questions", "8 domains") are read from the
-question bank at render time rather than hard-coded, so they stay honest as
-questions are added.
+The domain count in the orrery footer is read from the question bank at
+render time rather than hard-coded. The page deliberately doesn't show how
+many questions are in the bank; the landing page's stat is the owner's
+tutoring result instead.
 
 Planet art lives in `public/landing/`. The nine orrery images (~16 MB total)
 are only requested once the orrery is opened, so they stay off the landing

@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { questions } from "./questionBank";
 import "./Landing.css";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -330,8 +329,8 @@ function Landing({ onEnter }) {
           <footer className="vg-hero-footer" data-rise>
             <div className="vg-stats">
               <div className="vg-stat">
-                <span className="vg-stat-value">{questions.length.toLocaleString()}</span>
-                <span>Questions in bank</span>
+                <span className="vg-stat-value">+240</span>
+                <span>Points my friend gained after I tutored him</span>
               </div>
             </div>
             <span className="vg-hero-note">

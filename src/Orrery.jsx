@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { questions } from "./questionBank";
 import { domainGroups } from "./quizUtils";
 import { computeScore, formatAccuracy } from "../shared/scoring";
 import { useStudent } from "./student";
@@ -324,7 +323,7 @@ function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
           <span className="vg-hint-touch">Swipe to advance</span>
         </span>
         <span>
-          {domainGroups.length} domains / {questions.length.toLocaleString()} questions
+          {domainGroups.length} domains
         </span>
       </div>
     </div>
