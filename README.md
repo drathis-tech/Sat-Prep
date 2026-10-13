@@ -1,10 +1,11 @@
 # SAT Practice
 
-A React + Vite single-page app for practicing SAT questions: one random
-question at a time, multiple-choice or free-response, instant feedback with
-explanations, and a running score.
+A React + Vite app for practicing SAT questions, with a competition mode:
+students sign in with a nickname, answer questions from the bank with instant
+feedback and explanations, and compete on a shared leaderboard.
 
-The app opens on a landing page (`#/`); the practice hub lives at `#/app`.
+The app opens on a public landing page (`#/`); the practice hub lives at
+`#/app` and requires a student to be signed in.
 
 ## Features
 
@@ -15,7 +16,10 @@ The app opens on a landing page (`#/`); the practice hub lives at `#/app`.
 - Multiple choice (A/B/C/D) and free-response question types
 - Answer checking with correct/incorrect highlighting
 - Explanation shown after every answer
-- Score tracker (X/Y correct)
+- Student sign-in (nickname + 4-digit PIN), a lifetime score with a live
+  readout, and the "Mission Control" leaderboard
+- Answers are checked on the server — correct answers and explanations are
+  not sent to the browser until a student has submitted
 - Mobile-friendly layout, tested down to small screens (works well on
   Chromebooks)
 
@@ -27,11 +31,61 @@ npm run dev
 ```
 
 Open the printed local URL (typically http://localhost:5173) in your
-browser.
+browser. In development the `/api` routes run inside the Vite dev server
+against a local database stored in `.local-db/` (delete that folder to wipe
+local test students), so no Vercel account or hosted database is needed.
+
+## Competition mode
+
+### Planets
+
+Stages 1-8 of the orrery are the eight `domain` values in the question bank
+(Information and Ideas, Craft and Structure, Standard English Conventions,
+Expression of Ideas, Algebra, Advanced Math, Problem-Solving and Data
+Analysis, Geometry and Trigonometry). New questions join a planet
+automatically as long as their `domain` is one of these eight. Each stage
+shows the signed-in student's record for that domain.
+
+### Scoring
+
+The scoring function lives in [shared/scoring.js](shared/scoring.js) and is
+used by both the server (leaderboard) and the browser (live readout):
+
+```
+accuracy = correct ÷ answered
+score    = 1000 × accuracy × answered ÷ (answered + 50)
+```
+
+Scores are lifetime, questions answered are uncapped, the score never
+exceeds 1000, and below 60% accuracy it shows 0. Practice and timed-test
+answers both count; blank timed-test answers are not submitted.
+
+To stop a student re-submitting a question they have just read the
+explanation for, a repeat of the same question only counts again after the
+student has answered 15 other questions (`REPEAT_COOLDOWN` in
+[api/answer.js](api/answer.js)). Until then it is shown as "practice only".
+Practice sets also serve the questions a student has answered least first.
+
+### Data
+
+Postgres, three tables, created automatically on first request
+([api/_lib/db.js](api/_lib/db.js)):
+
+- `students` — nickname, PIN hash, lifetime `answered` / `correct` counts
+- `answers` — every submitted answer (student, question, domain, given
+  answer, right/wrong, whether it counted)
+- `sessions` — sign-in sessions
+
+To reset a forgotten PIN or remove a student, edit the `students` table in
+your database provider's SQL console (deleting a student row removes their
+answers too).
 
 ## Adding your own questions
 
-All questions live in [src/questions.js](src/questions.js). See
+All questions live in [src/questions.js](src/questions.js). That file
+includes the answers, so only the server reads it; the browser imports an
+answer-free copy through `src/questionBank.js` (the build fails if browser
+code imports `src/questions.js` directly). See
 [CONVERTING_QUESTIONS.md](CONVERTING_QUESTIONS.md) for a full guide on
 turning a PDF of 300 SAT questions into entries for this file, plus helper
 scripts:
@@ -55,8 +109,15 @@ The build output goes to `dist/`.
 
 ## Deploying to Vercel
 
-This is a static Vite app, so Vercel needs no special configuration beyond
-the defaults (`vercel.json` in this repo pins them explicitly):
+The app is a Vite front end plus serverless functions in `api/`, which
+Vercel picks up automatically. It needs a Postgres database:
+
+1. In the Vercel dashboard, open the project → **Storage** → **Create
+   Database** → **Neon** (Postgres), and connect it to the project. This
+   sets the `DATABASE_URL` environment variable.
+2. Redeploy. The tables are created on the first request.
+
+Build settings are the Vite defaults (`vercel.json` pins them explicitly):
 
 - **Framework preset:** Vite
 - **Build command:** `npm run build`
@@ -79,8 +140,18 @@ vercel --prod # production deployment
 ## Project structure
 
 ```
+api/                # Vercel serverless functions: login, logout, me,
+                    # answer, leaderboard (+ _lib/ for database and sessions)
+shared/
+  scoring.js        # the score formula (server + browser)
+  checkAnswer.js    # answer checking (server only)
 src/
-  questions.js      # question bank (edit this to add more questions)
+  questions.js      # question bank with answers (server only)
+  questionBank.js   # answer-free bank for the browser
+  student.js        # signed-in student + live stats store
+  Login.jsx         # nickname + PIN sign-in
+  MissionControl.jsx  # leaderboard
+  ScoreReadout.jsx  # live lifetime score
   App.jsx           # hash routing, plus the app shell's screen state
   Landing.jsx/.css  # landing page: hero, FAQ, calls to action
   Orrery.jsx/.css   # the app's hub — nine planet stages, one per domain
@@ -98,7 +169,8 @@ vercel.json                 # Vercel build configuration
 ## Screens
 
 `#/` is the landing page (`src/Landing.jsx`) — hero, FAQ, calls to action.
-`#/app` is the app shell (`src/App.jsx`), which has three screens:
+`#/app` shows the sign-in screen (`src/Login.jsx`) until a student is signed
+in, then the app shell (`src/App.jsx`), which has three screens:
 
 - **the orrery** (`src/Orrery.jsx`), the hub: nine full-screen planet stages,
   advanced by wheel, arrow keys, swipe, or the tick rail

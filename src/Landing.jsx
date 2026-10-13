@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { questions } from "./questions";
+import { questions } from "./questionBank";
 import "./Landing.css";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -306,7 +306,7 @@ function Landing({ onEnter }) {
           <main className="vg-hero-main">
             <div className="vg-eyebrow" data-rise>
               <span className="vg-eyebrow-dot" aria-hidden="true"></span>
-              Full question bank, open to everyone
+              Full question bank, one class leaderboard
             </div>
 
             <h1 className="vg-hero-title" data-rise>
@@ -335,7 +335,7 @@ function Landing({ onEnter }) {
               </div>
             </div>
             <span className="vg-hero-note">
-              No account, no sign-up. Every question in the bank opens straight away.
+              Sign in with a nickname and a 4-digit PIN. Every answer counts toward your score.
             </span>
           </footer>
         </div>
@@ -377,10 +377,10 @@ function Landing({ onEnter }) {
       <section className="vg-section">
         <div className="vg-account" data-reveal>
           <div className="vg-account-copy">
-            <h2>The whole bank, open to everyone</h2>
+            <h2>The whole bank, one leaderboard</h2>
             <p>
-              Every question and every full-length test is free to run, with nothing to sign up for
-              and nothing to pay. Pick a domain and start, or search the bank for a specific skill.
+              Every question and every full-length test is free to run. Sign in with a nickname, pick
+              a domain and start — every answer counts toward your score in Mission Control.
             </p>
           </div>
           <button

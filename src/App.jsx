@@ -5,6 +5,9 @@ import PracticeMode from "./PracticeMode";
 import TimedTest from "./TimedTest";
 import BrowsePanel from "./BrowsePanel";
 import Starfield from "./Starfield";
+import Login from "./Login";
+import MissionControl from "./MissionControl";
+import { loadSession, useStudent } from "./student";
 import { filterQuestions, searchQuestions, subjectLabel } from "./quizUtils";
 import { useScreenFade } from "./useScreenFade";
 import "./App.css";
@@ -47,6 +50,7 @@ function AppShell({ entry, onExit }) {
   const [screen, setScreen] = useState(initial.screen); // orrery | practice | timed
   const [filter, setFilter] = useState(initial.filter);
   const [browseOpen, setBrowseOpen] = useState(initial.browse);
+  const [missionOpen, setMissionOpen] = useState(false);
 
   function startPractice(nextFilter) {
     const variant = screen === "practice" ? "light" : "full";
@@ -106,6 +110,8 @@ function AppShell({ entry, onExit }) {
           onClose={onExit}
           onEnter={startFromStage}
           onBrowse={() => setBrowseOpen(true)}
+          onMission={() => setMissionOpen(true)}
+          paused={browseOpen || missionOpen}
         />
       ) : screen === "practice" ? (
         <PracticeMode
@@ -125,6 +131,8 @@ function AppShell({ entry, onExit }) {
           onStartSearch={handleBrowseSearch}
         />
       )}
+
+      {missionOpen && <MissionControl onClose={() => setMissionOpen(false)} />}
     </div>
   );
 }
@@ -132,9 +140,11 @@ function AppShell({ entry, onExit }) {
 function App() {
   const [route, setRoute] = useState(readRoute);
   const [entry, setEntry] = useState(null);
+  const { status } = useStudent();
 
   useEffect(() => {
     document.title = "SAT Practice";
+    loadSession();
   }, []);
 
   useEffect(() => {
@@ -157,6 +167,17 @@ function App() {
   }, []);
 
   if (route === "landing") return <Landing onEnter={enterApp} />;
+
+  // The landing page is public; everything behind "#/app" belongs to a
+  // signed-in student, since every answer there is scored.
+  if (status === "loading") {
+    return (
+      <div className="cm-screen">
+        <p className="cm-loading">Contacting Mission Control…</p>
+      </div>
+    );
+  }
+  if (status !== "signedIn") return <Login onBack={exitToLanding} />;
 
   // Remounting on each entry keeps the shell's screen/filter state honest:
   // a fresh intent should not have to reconcile with a stale one.
