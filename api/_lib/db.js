@@ -34,16 +34,41 @@ const SCHEMA = [
 
 let sql;
 
+// Vercel's database integrations name the connection string DATABASE_URL by
+// default, but a custom prefix chosen when connecting renames it (for
+// example STORAGE_URL or STORAGE_DATABASE_URL). Rather than depend on the
+// name, take the standard ones first and otherwise any variable that holds a
+// Postgres connection string, preferring the pooled, SSL one.
+function findDatabaseUrl() {
+  const isPostgres = (value) => /^postgres(ql)?:\/\//.test(value || "");
+  for (const name of ["DATABASE_URL", "POSTGRES_URL"]) {
+    if (isPostgres(process.env[name])) return process.env[name];
+  }
+  const candidates = Object.keys(process.env)
+    .filter((name) => isPostgres(process.env[name]))
+    .sort((x, y) => rank(x) - rank(y) || x.length - y.length);
+  if (candidates.length) return process.env[candidates[0]];
+
+  const urlish = Object.keys(process.env).filter((name) => /URL|POSTGRES|^PG/.test(name));
+  throw new Error(
+    "No database configured: no environment variable holds a Postgres connection string " +
+      `(connect a Postgres database in Vercel). URL-like variables present: ${urlish.join(", ") || "none"}.`
+  );
+}
+
+function rank(name) {
+  if (/NO_SSL/.test(name)) return 3;
+  if (/UNPOOLED|NON_POOLING/.test(name)) return 2;
+  if (/PRISMA/.test(name)) return 1;
+  return 0;
+}
+
 // `npm run dev` installs an in-process Postgres on this global (see
 // vite.config.js) so the app runs locally with no hosted database.
 function driver() {
   if (globalThis.__SAT_DEV_DB) return globalThis.__SAT_DEV_DB;
   if (!sql) {
-    const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-    if (!url) {
-      throw new Error("No database configured: set DATABASE_URL (connect a Postgres database in Vercel).");
-    }
-    sql = neon(url);
+    sql = neon(findDatabaseUrl());
   }
   return {
     query: (text, params) => sql.query(text, params),
