@@ -196,7 +196,7 @@ function Teacher({ onBack }) {
     <div className="cm-screen">
       <div className="pr-head">
         <div className="pr-crumbs">
-          <span className="pr-crumb-app">Vega / Teacher</span>
+          <span className="pr-crumb-app">VegaSAT / Teacher</span>
         </div>
         <div className="pr-head-right">
           <button type="button" className="pr-pill" onClick={onBack}>

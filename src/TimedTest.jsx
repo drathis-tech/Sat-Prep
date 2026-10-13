@@ -59,7 +59,7 @@ function Shell({ crumb, children, right, onExit }) {
     <div className="pr-screen">
       <div className="pr-head">
         <div className="pr-crumbs">
-          <span className="pr-crumb-app">Vega / Full test</span>
+          <span className="pr-crumb-app">VegaSAT / Full test</span>
           {crumb && <span className="pr-crumb-domain">{crumb}</span>}
         </div>
         <div className="pr-head-right">
@@ -354,7 +354,7 @@ function TimedTest({ onExit }) {
               </button>
               {onExit && (
                 <button type="button" className="pr-btn-ghost" onClick={onExit}>
-                  Back to Vega
+                  Back to VegaSAT
                 </button>
               )}
             </div>

@@ -56,7 +56,7 @@ function MissionControl({ onClose }) {
       >
         <div className="cm-mission-head">
           <div>
-            <span className="pr-label">Vega / Leaderboard</span>
+            <span className="pr-label">VegaSAT / Leaderboard</span>
             <h2 className="cm-mission-title">Mission Control</h2>
           </div>
           <button type="button" className="pr-pill" onClick={onClose}>

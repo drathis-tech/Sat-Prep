@@ -203,7 +203,7 @@ function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
   return (
     <div className="vg-orrery" role="dialog" aria-modal="true" aria-label="Domain orrery">
       <div className="vg-orrery-bar">
-        <span className="vg-orrery-crumb">Vega / Orrery</span>
+        <span className="vg-orrery-crumb">VegaSAT / Orrery</span>
         <div className="vg-orrery-actions">
           <ScoreReadout />
           {onMission && (

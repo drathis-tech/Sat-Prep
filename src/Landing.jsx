@@ -290,7 +290,7 @@ function Landing({ onEnter }) {
           <header className="vg-header" data-rise>
             <div className="vg-wordmark">
               <div className="vg-wordmark-dot" aria-hidden="true"></div>
-              <span className="vg-wordmark-text">Vega</span>
+              <span className="vg-wordmark-text">VegaSAT</span>
             </div>
             <nav className="vg-nav">
               <button type="button" className="vg-nav-link" onClick={() => onEnter(null)}>

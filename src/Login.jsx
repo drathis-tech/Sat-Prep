@@ -51,7 +51,7 @@ function Login({ onBack }) {
     <div className="cm-screen">
       <div className="pr-head">
         <div className="pr-crumbs">
-          <span className="pr-crumb-app">Vega / Sign in</span>
+          <span className="pr-crumb-app">VegaSAT / Sign in</span>
         </div>
         <div className="pr-head-right">
           <button type="button" className="pr-pill" onClick={onBack}>

@@ -76,7 +76,7 @@ function Results({ log, domainLabel, onRetry, onExit }) {
             Run the set again
           </button>
           <button type="button" className="pr-btn-ghost" onClick={onExit}>
-            Back to Vega
+            Back to VegaSAT
           </button>
         </div>
       </div>
@@ -199,7 +199,7 @@ function PracticeMode({ questionPool, title, onExit }) {
     <div className="pr-screen">
       <div className="pr-head">
         <div className="pr-crumbs">
-          <span className="pr-crumb-app">Vega / Practice</span>
+          <span className="pr-crumb-app">VegaSAT / Practice</span>
           <span className="pr-crumb-domain">{current.domain}</span>
           <span className="pr-crumb-skill">{current.skill}</span>
         </div>

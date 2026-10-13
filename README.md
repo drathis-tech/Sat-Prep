@@ -1,4 +1,4 @@
-# SAT Practice
+# VegaSAT
 
 A React + Vite app for practicing SAT questions, with a competition mode:
 students sign in with a nickname, answer questions from the bank with instant

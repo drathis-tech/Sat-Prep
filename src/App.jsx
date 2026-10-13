@@ -145,7 +145,7 @@ function App() {
   const { status } = useStudent();
 
   useEffect(() => {
-    document.title = "SAT Practice";
+    document.title = "VegaSAT";
     loadSession();
   }, []);
 
