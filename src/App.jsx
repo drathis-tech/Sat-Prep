@@ -8,7 +8,7 @@ import Starfield from "./Starfield";
 import Login from "./Login";
 import MissionControl from "./MissionControl";
 import Teacher from "./Teacher";
-import { loadSession, useStudent } from "./student";
+import { leaveGuest, loadSession, useStudent } from "./student";
 import { filterQuestions, searchQuestions, subjectLabel } from "./quizUtils";
 import { useScreenFade } from "./useScreenFade";
 import "./App.css";
@@ -53,6 +53,8 @@ function AppShell({ entry, onExit }) {
   const [filter, setFilter] = useState(initial.filter);
   const [browseOpen, setBrowseOpen] = useState(initial.browse);
   const [missionOpen, setMissionOpen] = useState(false);
+  const { status } = useStudent();
+  const isGuest = status === "guest";
 
   function startPractice(nextFilter) {
     const variant = screen === "practice" ? "light" : "full";
@@ -112,7 +114,8 @@ function AppShell({ entry, onExit }) {
           onClose={onExit}
           onEnter={startFromStage}
           onBrowse={() => setBrowseOpen(true)}
-          onMission={() => setMissionOpen(true)}
+          onMission={isGuest ? null : () => setMissionOpen(true)}
+          onSignIn={isGuest ? leaveGuest : null}
           paused={browseOpen || missionOpen}
         />
       ) : screen === "practice" ? (
@@ -134,7 +137,7 @@ function AppShell({ entry, onExit }) {
         />
       )}
 
-      {missionOpen && <MissionControl onClose={() => setMissionOpen(false)} />}
+      {missionOpen && !isGuest && <MissionControl onClose={() => setMissionOpen(false)} />}
     </div>
   );
 }
@@ -171,8 +174,8 @@ function App() {
   if (route === "landing") return <Landing onEnter={enterApp} />;
   if (route === "teacher") return <Teacher onBack={exitToLanding} />;
 
-  // The landing page is public; everything behind "#/app" belongs to a
-  // signed-in student, since every answer there is scored.
+  // The landing page is public. Behind "#/app" you are either a signed-in
+  // student, whose answers are scored, or a guest, whose answers are not.
   if (status === "loading") {
     return (
       <div className="cm-screen">
@@ -180,7 +183,7 @@ function App() {
       </div>
     );
   }
-  if (status !== "signedIn") return <Login onBack={exitToLanding} />;
+  if (status === "signedOut") return <Login onBack={exitToLanding} />;
 
   // Remounting on each entry keeps the shell's screen/filter state honest:
   // a fresh intent should not have to reconcile with a stale one.

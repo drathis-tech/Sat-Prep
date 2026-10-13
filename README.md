@@ -5,7 +5,9 @@ students sign in with a nickname, answer questions from the bank with instant
 feedback and explanations, and compete on a shared leaderboard.
 
 The app opens on a public landing page (`#/`); the practice hub lives at
-`#/app` and requires a student to be signed in.
+`#/app`. Students sign in to be scored, or choose "Practice without an
+account" to practise as a guest: guest answers are checked and explained by
+the server but are not stored and never reach the leaderboard.
 
 ## Features
 

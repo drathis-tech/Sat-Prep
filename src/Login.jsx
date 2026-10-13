@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { login } from "./student";
+import { continueAsGuest, login } from "./student";
 import "./Practice.css";
 import "./Competition.css";
 
@@ -147,6 +147,16 @@ function Login({ onBack }) {
           <button type="submit" className="pr-btn-primary cm-submit" disabled={!ready || busy}>
             {busy ? "Checking…" : mode === "create" ? "Create my account" : "Log in"}
           </button>
+
+          <div className="cm-guest">
+            <button type="button" className="pr-btn-ghost" onClick={continueAsGuest}>
+              Practice without an account
+            </button>
+            <p className="cm-hint">
+              Guest answers are checked and explained, but they aren&apos;t saved and don&apos;t count
+              on the leaderboard.
+            </p>
+          </div>
         </form>
       </div>
     </div>

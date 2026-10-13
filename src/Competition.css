@@ -512,3 +512,14 @@ a.pr-pill {
   display: flex;
   gap: 10px;
 }
+
+/* ---------- guest mode ---------- */
+
+.cm-guest {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 22px;
+  border-top: 1px solid #191919;
+}

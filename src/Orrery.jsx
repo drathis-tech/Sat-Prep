@@ -96,7 +96,8 @@ export { STAGES };
 
 // What the signed-in student has done on a stage: their overall score on the
 // core, their record in that domain on a planet.
-function stageStat(entry, totals, domains) {
+function stageStat(entry, totals, domains, isGuest) {
+  if (isGuest) return "Guest mode — answers aren't scored";
   if (entry.type === "timed") {
     return totals.answered > 0
       ? `Your score ${computeScore(totals)} · ${formatAccuracy(totals)} accuracy`
@@ -110,8 +111,8 @@ function stageStat(entry, totals, domains) {
   })} correct`;
 }
 
-function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
-  const { totals, domains } = useStudent();
+function Orrery({ onClose, onEnter, onBrowse, onMission, onSignIn, paused }) {
+  const { totals, domains, status } = useStudent();
   const [level, setLevel] = useState(0);
   const levelRef = useRef(0);
   const accumRef = useRef(0);
@@ -205,6 +206,11 @@ function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
         <span className="vg-orrery-crumb">VegaSAT / Orrery</span>
         <div className="vg-orrery-actions">
           <ScoreReadout />
+          {onSignIn && (
+            <button type="button" className="vg-pill" onClick={onSignIn}>
+              Sign in
+            </button>
+          )}
           {onMission && (
             <button type="button" className="vg-pill" onClick={onMission}>
               <svg viewBox="0 0 20 20" aria-hidden="true" className="vg-pill-icon">
@@ -286,7 +292,7 @@ function Orrery({ onClose, onEnter, onBrowse, onMission, paused }) {
               </span>
               <h3>{s.title}</h3>
               <p>{s.blurb}</p>
-              <span className="cm-panel-stat">{stageStat(s.entry, totals, domains)}</span>
+              <span className="cm-panel-stat">{stageStat(s.entry, totals, domains, status === "guest")}</span>
               <button
                 type="button"
                 className="vg-panel-btn"

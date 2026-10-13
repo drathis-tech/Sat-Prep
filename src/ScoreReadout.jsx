@@ -5,9 +5,18 @@ import "./Competition.css";
 // The live lifetime score. Reads straight from the student store, so it
 // re-renders the instant an answer comes back from the server.
 function ScoreReadout() {
-  const { totals } = useStudent();
+  const { totals, status } = useStudent();
   const score = computeScore(totals);
   const gated = totals.answered > 0 && score === 0;
+
+  if (status === "guest") {
+    return (
+      <span className="cm-score" title="Sign in to save your answers and score on the leaderboard">
+        <span className="cm-score-label">Guest</span>
+        <span className="cm-score-detail">not scored</span>
+      </span>
+    );
+  }
 
   return (
     <span

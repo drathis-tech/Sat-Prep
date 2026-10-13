@@ -4,7 +4,7 @@ import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 import { useScreenFade } from "./useScreenFade";
 import ReferenceSheet from "./ReferenceSheet";
-import { submitAnswer } from "./student";
+import { submitAnswer, useStudent } from "./student";
 import ScoreReadout from "./ScoreReadout";
 import "./Practice.css";
 import "./TimedTest.css";
@@ -78,6 +78,7 @@ function Shell({ crumb, children, right, onExit }) {
 
 function TimedTest({ onExit }) {
   const triggerFade = useScreenFade();
+  const isGuest = useStudent().status === "guest";
   const [phase, setPhase] = useState("intro"); // intro | running | results
   const [stageIndex, setStageIndex] = useState(0);
   const [moduleData, setModuleData] = useState(null);
@@ -235,8 +236,10 @@ function TimedTest({ onExit }) {
             <p className="tt-lede">
               The real digital SAT&apos;s structure and timing: two Reading &amp; Writing modules,
               a break, then two Math modules. Once you move on from a question you can&apos;t go
-              back to it. You can pause at any time to step away without losing time. Every
-              answer you submit counts toward your Mission Control score.
+              back to it. You can pause at any time to step away without losing time.{" "}
+              {isGuest
+                ? "You're practising as a guest, so this test won't be saved or scored."
+                : "Every answer you submit counts toward your Mission Control score."}
             </p>
             <ul className="tt-modules">
               {MODULES.map((m) => (
@@ -339,10 +342,12 @@ function TimedTest({ onExit }) {
               </div>
             </div>
 
-            <div className="cm-results-score">
-              <span className="pr-results-eyebrow">Your lifetime score</span>
-              <ScoreReadout />
-            </div>
+            {!isGuest && (
+              <div className="cm-results-score">
+                <span className="pr-results-eyebrow">Your lifetime score</span>
+                <ScoreReadout />
+              </div>
+            )}
 
             <div className="tt-actions">
               <button

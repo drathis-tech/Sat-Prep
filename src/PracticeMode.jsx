@@ -4,7 +4,7 @@ import { renderMath } from "./renderMath";
 import Calculator from "./Calculator";
 import ReferenceSheet from "./ReferenceSheet";
 import { useScreenFade } from "./useScreenFade";
-import { orderForStudent, submitAnswer } from "./student";
+import { orderForStudent, submitAnswer, useStudent } from "./student";
 import ScoreReadout from "./ScoreReadout";
 import "./Practice.css";
 
@@ -15,6 +15,7 @@ const SET_SIZE = 30;
 // Per-skill tally for the set, weakest first — that ordering is the point:
 // the first row is what to work on next.
 function Results({ log, domainLabel, onRetry, onExit }) {
+  const { status } = useStudent();
   const right = log.filter((entry) => entry.correct).length;
   const pct = log.length ? Math.round((right / log.length) * 100) : 0;
 
@@ -66,10 +67,17 @@ function Results({ log, domainLabel, onRetry, onExit }) {
           </div>
         </div>
 
-        <div className="cm-results-score">
-          <span className="pr-results-eyebrow">Your lifetime score</span>
-          <ScoreReadout />
-        </div>
+        {status === "guest" ? (
+          <p className="cm-practice-only">
+            You&apos;re practising as a guest, so this set wasn&apos;t saved. Sign in from the orrery
+            to keep a score.
+          </p>
+        ) : (
+          <div className="cm-results-score">
+            <span className="pr-results-eyebrow">Your lifetime score</span>
+            <ScoreReadout />
+          </div>
+        )}
 
         <div className="pr-results-actions">
           <button type="button" className="pr-btn-primary" onClick={onRetry}>
@@ -133,6 +141,7 @@ function PracticeMode({ questionPool, title, onExit }) {
           correctAnswer: result.correctAnswer,
           explanation: result.explanation,
           counted: result.counted,
+          guest: Boolean(result.guest),
         },
       ]);
       setAnswered(true);
@@ -297,7 +306,7 @@ function PracticeMode({ questionPool, title, onExit }) {
                   {wasCorrect ? "You got it." : `Correct answer: ${answered ? lastEntry.correctAnswer : ""}`}
                 </span>
               </div>
-              {answered && !lastEntry.counted && (
+              {answered && !lastEntry.counted && !lastEntry.guest && (
                 <p className="cm-practice-only">
                   Practice only — you answered this one recently, so it didn&apos;t change your
                   score.

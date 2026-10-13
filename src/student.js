@@ -5,7 +5,7 @@ import { shuffle } from "./quizUtils";
 // Every screen reads from this one store, so the score readout, the planet
 // rings and the leaderboard highlight all update the moment an answer lands.
 let state = {
-  status: "loading", // loading | signedOut | signedIn
+  status: "loading", // loading | signedOut | guest | signedIn
   student: null,
   isOwner: false,
   totals: { answered: 0, correct: 0 },
@@ -61,7 +61,28 @@ function signOutLocally() {
 }
 
 function signIn(data) {
+  rememberGuest(false);
   setState({ status: "signedIn", ...data });
+}
+
+// Guest mode — practising without an account — lasts for the browser tab.
+const GUEST_KEY = "vegasat-guest";
+
+function rememberGuest(on) {
+  try {
+    if (on) sessionStorage.setItem(GUEST_KEY, "1");
+    else sessionStorage.removeItem(GUEST_KEY);
+  } catch {
+    // Storage unavailable — guest mode just won't survive a refresh.
+  }
+}
+
+function wasGuest() {
+  try {
+    return sessionStorage.getItem(GUEST_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 export async function loadSession() {
@@ -69,7 +90,22 @@ export async function loadSession() {
     signIn(await api("/api/me"));
   } catch {
     signOutLocally();
+    if (wasGuest()) setState({ status: "guest" });
   }
+}
+
+// Practise without an account: answers are checked, but nothing is saved
+// or scored.
+export function continueAsGuest() {
+  rememberGuest(true);
+  signOutLocally();
+  setState({ status: "guest" });
+}
+
+// Back to the sign-in screen from guest mode.
+export function leaveGuest() {
+  rememberGuest(false);
+  signOutLocally();
 }
 
 export async function login({ nickname, pin, create, classCode }) {
@@ -89,6 +125,13 @@ export async function logout() {
 export async function submitAnswer(question, given) {
   const result = await api("/api/answer", { questionId: question.id, given });
 
+  // The server treated a signed-in student as a guest: the session has
+  // ended, and carrying on would silently stop scoring their answers.
+  if (result.guest && state.status === "signedIn") {
+    signOutLocally();
+    throw new Error("You've been signed out. Sign in again to keep scoring.");
+  }
+
   const domains = { ...state.domains };
   if (result.counted) {
     const entry = domains[result.domain] || { attempted: 0, correct: 0 };
@@ -98,7 +141,7 @@ export async function submitAnswer(question, given) {
     };
   }
   setState({
-    totals: result.totals,
+    totals: result.totals || state.totals,
     domains,
     seen: { ...state.seen, [question.id]: (state.seen[question.id] || 0) + 1 },
   });

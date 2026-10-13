@@ -328,7 +328,7 @@ function Landing({ onEnter }) {
 
           <footer className="vg-hero-footer" data-rise>
             <span className="vg-hero-note">
-              Sign in with a nickname and a 4-digit PIN. Every answer counts toward your score.
+              Practice as a guest, or sign in with a nickname and PIN to score on the leaderboard.
             </span>
           </footer>
         </div>
@@ -372,8 +372,9 @@ function Landing({ onEnter }) {
           <div className="vg-account-copy">
             <h2>The whole bank, one leaderboard</h2>
             <p>
-              Every question and every full-length test is free to run. Sign in with a nickname, pick
-              a domain and start — every answer counts toward your score in Mission Control.
+              Every question and every full-length test is free to run, with or without an
+              account. Sign in with a nickname and every answer counts toward your score in
+              Mission Control.
             </p>
           </div>
           <button

@@ -2,7 +2,7 @@ import { questions } from "../src/questions.js";
 import { isAnswerCorrect } from "../shared/checkAnswer.js";
 import { transaction } from "./_lib/db.js";
 import { readJson, route, send, sendError } from "./_lib/http.js";
-import { requireStudent } from "./_lib/auth.js";
+import { currentStudentId } from "./_lib/auth.js";
 
 const byId = new Map(questions.map((q) => [q.id, q]));
 
@@ -12,8 +12,7 @@ const byId = new Map(questions.map((q) => [q.id, q]));
 const REPEAT_COOLDOWN = 15;
 
 export default route("POST", async (req, res) => {
-  const studentId = await requireStudent(req, res);
-  if (!studentId) return;
+  const studentId = await currentStudentId(req);
 
   const body = await readJson(req);
   const question = byId.get(Number(body.questionId));
@@ -22,6 +21,21 @@ export default route("POST", async (req, res) => {
   if (!given) return sendError(res, 400, "No answer given.");
 
   const correct = isAnswerCorrect(question, given);
+
+  // Guests (no account) get the verdict and the explanation, but nothing is
+  // stored and nothing is scored.
+  if (!studentId) {
+    return send(res, 200, {
+      questionId: question.id,
+      domain: question.domain,
+      correct,
+      counted: false,
+      guest: true,
+      correctAnswer: question.correctAnswer,
+      explanation: question.explanation,
+      totals: null,
+    });
+  }
 
   // Locking the student row first serializes that student's submissions, so
   // a burst of parallel requests can't all slip past the repeat check.
