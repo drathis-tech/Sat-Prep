@@ -30,25 +30,25 @@ export function verifyPin(pin, stored) {
   return timingSafeEqual(actual, expected);
 }
 
-function hashToken(token) {
+export function hashToken(token) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-function cookieHeader(value, maxAge) {
+export function cookieHeader(name, value, maxAge) {
   const secure = process.env.VERCEL ? "; Secure" : "";
-  return `${COOKIE}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+  return `${name}=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
 }
 
 export async function startSession(res, studentId) {
   const token = randomBytes(32).toString("base64url");
   await query("INSERT INTO sessions (token_hash, student_id) VALUES ($1, $2)", [hashToken(token), studentId]);
-  res.setHeader("Set-Cookie", cookieHeader(token, MAX_AGE_SECONDS));
+  res.setHeader("Set-Cookie", cookieHeader(COOKIE, token, MAX_AGE_SECONDS));
 }
 
 export async function endSession(req, res) {
   const token = readCookie(req, COOKIE);
   if (token) await query("DELETE FROM sessions WHERE token_hash = $1", [hashToken(token)]);
-  res.setHeader("Set-Cookie", cookieHeader("", 0));
+  res.setHeader("Set-Cookie", cookieHeader(COOKIE, "", 0));
 }
 
 // Resolves to the signed-in student's id, or sends a 401 and resolves to null.

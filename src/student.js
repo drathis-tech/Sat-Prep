@@ -70,8 +70,8 @@ export async function loadSession() {
   }
 }
 
-export async function login({ nickname, pin, create }) {
-  signIn(await api("/api/login", { nickname, pin, create }));
+export async function login({ nickname, pin, create, classCode }) {
+  signIn(await api("/api/login", { nickname, pin, create, classCode }));
 }
 
 export async function logout() {

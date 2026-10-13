@@ -10,6 +10,7 @@ import {
   verifyPin,
 } from "./_lib/auth.js";
 import { getStudentState } from "./_lib/state.js";
+import { classCodeMatches, getSetting } from "./_lib/teacher.js";
 
 export default route("POST", async (req, res) => {
   const body = await readJson(req);
@@ -23,6 +24,10 @@ export default route("POST", async (req, res) => {
   let studentId;
 
   if (body.create) {
+    const classCode = await getSetting("class_code");
+    if (classCode && !classCodeMatches(body.classCode, classCode)) {
+      return sendError(res, 403, "That class code isn't right. Ask your teacher for it.");
+    }
     const created = await query(
       `INSERT INTO students (nickname, nickname_key, pin_hash) VALUES ($1, $2, $3)
        ON CONFLICT (nickname_key) DO NOTHING RETURNING id`,

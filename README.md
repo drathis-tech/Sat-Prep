@@ -68,17 +68,30 @@ Practice sets also serve the questions a student has answered least first.
 
 ### Data
 
-Postgres, three tables, created automatically on first request
+Postgres tables, created automatically on first request
 ([api/_lib/db.js](api/_lib/db.js)):
 
 - `students` — nickname, PIN hash, lifetime `answered` / `correct` counts
 - `answers` — every submitted answer (student, question, domain, given
   answer, right/wrong, whether it counted)
 - `sessions` — sign-in sessions
+- `settings`, `teacher_sessions` — class code, teacher password hash and
+  teacher sign-ins
 
-To reset a forgotten PIN or remove a student, edit the `students` table in
-your database provider's SQL console (deleting a student row removes their
-answers too).
+### Teacher console
+
+`#/teacher` (also linked from the sign-in screen) is the teacher page. The
+first visit asks you to choose a teacher password; this can only be done
+once, so do it before sharing the site. From there you can:
+
+- set or remove a **class code** that new students must type to create an
+  account (existing students are unaffected)
+- **reset a student's PIN** (this also signs them out everywhere)
+- **rename** or **remove** a student (removing deletes their answers too)
+
+If the teacher password is lost, delete the `teacher_password` row from the
+`settings` table in your database provider's SQL console and set a new one
+at `#/teacher`.
 
 ## Adding your own questions
 
@@ -151,6 +164,7 @@ src/
   student.js        # signed-in student + live stats store
   Login.jsx         # nickname + PIN sign-in
   MissionControl.jsx  # leaderboard
+  Teacher.jsx       # teacher console (class code, PIN resets)
   ScoreReadout.jsx  # live lifetime score
   App.jsx           # hash routing, plus the app shell's screen state
   Landing.jsx/.css  # landing page: hero, FAQ, calls to action

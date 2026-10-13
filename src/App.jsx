@@ -7,6 +7,7 @@ import BrowsePanel from "./BrowsePanel";
 import Starfield from "./Starfield";
 import Login from "./Login";
 import MissionControl from "./MissionControl";
+import Teacher from "./Teacher";
 import { loadSession, useStudent } from "./student";
 import { filterQuestions, searchQuestions, subjectLabel } from "./quizUtils";
 import { useScreenFade } from "./useScreenFade";
@@ -19,6 +20,7 @@ const EMPTY_FILTER = { subject: "all", domain: null, skill: null, searchQuery: n
 // "#/app". The entry intent a landing CTA carries is kept in state rather
 // than the URL — it only describes how to open the app that one time.
 function readRoute() {
+  if (window.location.hash.startsWith("#/teacher")) return "teacher";
   return window.location.hash.startsWith("#/app") ? "app" : "landing";
 }
 
@@ -167,6 +169,7 @@ function App() {
   }, []);
 
   if (route === "landing") return <Landing onEnter={enterApp} />;
+  if (route === "teacher") return <Teacher onBack={exitToLanding} />;
 
   // The landing page is public; everything behind "#/app" belongs to a
   // signed-in student, since every answer there is scored.

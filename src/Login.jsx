@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login } from "./student";
 import "./Practice.css";
 import "./Competition.css";
@@ -9,8 +9,25 @@ function Login({ onBack }) {
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [classCode, setClassCode] = useState("");
+  const [needsCode, setNeedsCode] = useState(false);
 
-  const ready = nickname.trim().length >= 2 && /^\d{4}$/.test(pin);
+  // Whether the teacher has set a class code for new sign-ups.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/teacher")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setNeedsCode(Boolean(data.classCodeRequired));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const codeOk = mode !== "create" || !needsCode || classCode.trim().length > 0;
+  const ready = nickname.trim().length >= 2 && /^\d{4}$/.test(pin) && codeOk;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -18,7 +35,7 @@ function Login({ onBack }) {
     setBusy(true);
     setError(null);
     try {
-      await login({ nickname, pin, create: mode === "create" });
+      await login({ nickname, pin, create: mode === "create", classCode });
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -37,6 +54,9 @@ function Login({ onBack }) {
           <span className="pr-crumb-app">Vega / Sign in</span>
         </div>
         <div className="pr-head-right">
+          <a className="pr-pill" href="#/teacher">
+            Teacher
+          </a>
           <button type="button" className="pr-pill" onClick={onBack}>
             Back
           </button>
@@ -98,6 +118,21 @@ function Login({ onBack }) {
               autoComplete={mode === "create" ? "new-password" : "current-password"}
             />
           </label>
+
+          {mode === "create" && needsCode && (
+            <label className="cm-field">
+              <span className="pr-label">Class code</span>
+              <input
+                type="text"
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value)}
+                maxLength={24}
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+              />
+            </label>
+          )}
 
           {mode === "create" && (
             <p className="cm-hint">
