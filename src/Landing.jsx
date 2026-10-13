@@ -327,12 +327,6 @@ function Landing({ onEnter }) {
           </main>
 
           <footer className="vg-hero-footer" data-rise>
-            <div className="vg-stats">
-              <div className="vg-stat">
-                <span className="vg-stat-value">+240</span>
-                <span>Points my friend gained after I tutored him</span>
-              </div>
-            </div>
             <span className="vg-hero-note">
               Sign in with a nickname and a 4-digit PIN. Every answer counts toward your score.
             </span>

@@ -396,26 +396,9 @@
   animation-delay: 320ms;
 }
 
-.vg-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: clamp(20px, 4vw, 52px);
-}
-
-.vg-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.vg-stat-value {
-  color: #e6eef8;
-  font-size: 16px;
-  letter-spacing: 0;
-  font-family: "IBM Plex Sans", sans-serif;
-}
-
 .vg-hero-note {
+  /* Alone in the footer row now, so it holds the right edge by itself. */
+  margin-left: auto;
   max-width: 30ch;
   line-height: 1.7;
   text-transform: none;

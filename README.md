@@ -207,8 +207,7 @@ A landing CTA hands an *entry intent* to the shell, which resolves it on mount:
 
 The domain count in the orrery footer is read from the question bank at
 render time rather than hard-coded. The page deliberately doesn't show how
-many questions are in the bank; the landing page's stat is the owner's
-tutoring result instead.
+many questions are in the bank.
 
 Planet art lives in `public/landing/`. The nine orrery images (~16 MB total)
 are only requested once the orrery is opened, so they stay off the landing
